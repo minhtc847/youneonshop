@@ -1,0 +1,95 @@
+definitions:
+  data.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first-name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      modified_at:
+        type: string
+      telephone:
+        type: string
+    type: object
+  main.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  main.UserRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: register user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/main.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.User'
+      summary: Register a user
+      tags:
+      - users
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Create a new authentication token for a user
+      parameters:
+      - description: user details
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/main.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Create a new authentication token for a user
+      tags:
+      - users
+  /users/logout:
+    post:
+      description: Logout a user
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Logout a user
+      tags:
+      - users
+swagger: "2.0"
