@@ -1,21 +1,100 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+ 
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --radius: 0.5rem;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+.text-neon-blue {
+  color: #00ffff;
 }
+
+.text-neon-pink {
+  color: #ff00ff;
+}
+
+.text-neon-yellow {
+  color: #ffff00;
+}
+
+.bg-neon-blue {
+  background-color: #00ffff;
+}
+
+.bg-neon-pink {
+  background-color: #ff00ff;
+}
+
+.bg-neon-yellow {
+  background-color: #ffff00;
+}
+
+.hover\:shadow-glow-blue:hover {
+  box-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff, 0 0 45px #00ffff;
+}
+
+.hover\:shadow-glow-pink:hover {
+  box-shadow: 0 0 15px #ff00ff, 0 0 30px #ff00ff, 0 0 45px #ff00ff;
+}
+
+.hover\:shadow-glow-yellow:hover {
+  box-shadow: 0 0 15px #ffff00, 0 0 30px #ffff00, 0 0 45px #ffff00;
+}
+
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+  }
+  100% {
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+  }
+}
+
+.group:hover .group-hover\:animate-glow {
+  animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+/* Custom styles for the Slider component */
+.slider-thumb {
+  @apply w-5 h-5 bg-neon-blue rounded-full shadow-lg cursor-pointer;
+}
+
+.slider-track {
+  @apply h-2 bg-gray-700 rounded-full;
+}
+
+.slider-track-1 {
+  @apply bg-neon-blue;
+}
+
