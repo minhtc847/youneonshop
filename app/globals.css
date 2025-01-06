@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -26,11 +26,12 @@
     --radius: 0.5rem;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -76,6 +77,7 @@
   0% {
     text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
   }
+
   100% {
     text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
   }
@@ -98,3 +100,40 @@
   @apply bg-neon-blue;
 }
 
+/* Custom styles for react-toastify */
+.Toastify__toast {
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.Toastify__toast-body {
+  font-family: inherit;
+}
+
+.Toastify__close-button {
+  color: #ffffff;
+}
+
+.Toastify__progress-bar {
+  height: 3px;
+}
+
+.Toastify__toast--info {
+  background-color: #1e1e1e;
+  color: #00ffff;
+}
+
+.Toastify__toast--success {
+  background-color: #1e1e1e;
+  color: #39ff14;
+}
+
+.Toastify__toast--warning {
+  background-color: #1e1e1e;
+  color: #ffff00;
+}
+
+.Toastify__toast--error {
+  background-color: #1e1e1e;
+  color: #ff00ff;
+}

@@ -2,6 +2,8 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from '@/components/navbar'
+import { ToastContainer, Slide } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,6 +25,21 @@ export default function RootLayout({
           <main className="pt-16">
             {children}
           </main>
+          <ToastContainer
+            position="bottom-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+            transition={Slide}
+            toastClassName="bg-gray-800 text-white"
+            progressClassName="bg-neon-blue"
+          />
         </ThemeProvider>
       </body>
     </html>
