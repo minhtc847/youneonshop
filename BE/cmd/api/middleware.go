@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/pascaldekloe/jwt"
 	"net/http"
@@ -107,17 +108,21 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 		w.Header().Add("Vary", "Origin")
 		// Get the value of the request's Origin header.
 		origin := r.Header.Get("Origin")
+		w.Header().Add("Vary", "Access-Control-Request-Headers")
+		fmt.Printf("Origin: %s\n", origin)
 		// Only run this if there's an Origin request header present.
 		if origin != "" {
 			// Loop through the list of trusted origins, checking to see if the request
 			// origin exactly matches one of them. If there are no trusted origins, then
 			// the loop won't be iterated.
 			for i := range app.config.cors.trustedOrigins {
+				fmt.Println(app.config.cors.trustedOrigins[i])
 				if origin == app.config.cors.trustedOrigins[i] {
 					// If there is a match, then set a "Access-Control-Allow-Origin"
 					// response header with the request origin as the value and break
 					// out of the loop.
 					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 					break
 				}
 			}
