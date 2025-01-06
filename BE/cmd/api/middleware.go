@@ -106,7 +106,7 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 		// Add the "Vary: Origin" header.
 		w.Header().Add("Vary", "Origin")
 		// Get the value of the request's Origin header.
-		origin := r.Header.Get("Origin")
+		origin := r.Header.Get("Referer")
 		// Only run this if there's an Origin request header present.
 		if origin != "" {
 			// Loop through the list of trusted origins, checking to see if the request
