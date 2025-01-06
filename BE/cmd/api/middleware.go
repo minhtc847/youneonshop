@@ -122,7 +122,7 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 					// response header with the request origin as the value and break
 					// out of the loop.
 					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+					w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 					break
 				}
 			}
