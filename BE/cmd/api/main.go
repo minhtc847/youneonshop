@@ -93,13 +93,7 @@ func main() {
 	flag.StringVar(&cfg.smtp.password, "smtp-password", smtpPassword, "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", smtpSender, "SMTP sender")
 
-	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
-		if len(val) == 0 {
-			cfg.cors.trustedOrigins = strings.Fields(corsTrustOrigin)
-		}
-		cfg.cors.trustedOrigins = strings.Fields(val)
-		return nil
-	})
+	cfg.cors.trustedOrigins = strings.Fields(corsTrustOrigin)
 
 	flag.StringVar(&cfg.jwt.secret, "jwt-secret", jwtSecret, "JWT secret")
 
