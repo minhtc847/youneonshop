@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 
 // Tạo một instance của Axios cho API bên ngoài
 const externalAxios = axios.create({
-    baseURL: 'http://localhost:4000', // Thay đổi baseURL nếu cần
+    baseURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:4000", // Thay đổi baseURL nếu cần
     //withCredentials: true, // Gửi cookies cùng với mỗi yêu cầu
     headers: {
         'Content-Type': 'application/json',

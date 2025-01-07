@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Neon Lights E-commerce',
+  title: 'YOUNEON',
   description: 'Minimalist e-commerce website for selling neon lights',
 }
 
@@ -26,8 +26,8 @@ export default function RootLayout({
             {children}
           </main>
           <ToastContainer
-            position="bottom-right"
-            autoClose={5000}
+            position="top-right"
+            autoClose={1000}
             hideProgressBar={false}
             newestOnTop={false}
             closeOnClick

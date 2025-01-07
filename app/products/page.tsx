@@ -10,15 +10,16 @@ import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { motion, AnimatePresence } from 'framer-motion'
 
+//300*300
 const products = [
-  { id: 1, name: 'Blue Wave', price: 129.99, image: '/placeholder.svg?height=300&width=300', category: 'Abstract' },
-  { id: 2, name: 'Pink Flamingo', price: 149.99, image: '/placeholder.svg?height=300&width=300', category: 'Animals' },
-  { id: 3, name: 'Yellow Bolt', price: 99.99, image: '/placeholder.svg?height=300&width=300', category: 'Abstract' },
-  { id: 4, name: 'Green Leaf', price: 139.99, image: '/placeholder.svg?height=300&width=300', category: 'Nature' },
-  { id: 5, name: 'Purple Haze', price: 159.99, image: '/placeholder.svg?height=300&width=300', category: 'Abstract' },
-  { id: 6, name: 'Red Heart', price: 119.99, image: '/placeholder.svg?height=300&width=300', category: 'Symbols' },
-  { id: 7, name: 'Orange Sunset', price: 134.99, image: '/placeholder.svg?height=300&width=300', category: 'Nature' },
-  { id: 8, name: 'Teal Ocean', price: 144.99, image: '/placeholder.svg?height=300&width=300', category: 'Nature' },
+  { id: 1, name: 'Blue Wave', price: 129.99, image: '/product-2.jpg', category: 'Abstract' },
+  { id: 2, name: 'Pink Flamingo', price: 149.99, image: '/product-2.jpg', category: 'Animals' },
+  { id: 3, name: 'Yellow Bolt', price: 99.99, image: '/product-2.jpg', category: 'Abstract' },
+  { id: 4, name: 'Green Leaf', price: 139.99, image: '/product-2.jpg', category: 'Nature' },
+  { id: 5, name: 'Purple Haze', price: 159.99, image: '/product-2.jpg', category: 'Abstract' },
+  { id: 6, name: 'Red Heart', price: 119.99, image: '/product-2.jpg', category: 'Symbols' },
+  { id: 7, name: 'Orange Sunset', price: 134.99, image: '/product-2.jpg', category: 'Nature' },
+  { id: 8, name: 'Teal Ocean', price: 144.99, image: '/product-2.jpg', category: 'Nature' },
 ]
 
 const categories = [...new Set(products.map(product => product.category))]

@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <div className="space-y-12">
       <SwipeableBanner />
-      <section className="py-16">
+      {/* <section className="py-16">
         <h2 className="text-4xl font-bold mb-12 text-center text-neon-blue">Featured Products</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {products.map((product) => (
@@ -39,7 +39,7 @@ export default function Home() {
             </Link>
           ))}
         </div>
-      </section>
+      </section> */}
     </div>
   )
 }
