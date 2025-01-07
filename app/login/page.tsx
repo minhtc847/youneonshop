@@ -18,11 +18,15 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const user = localStorage.getItem('user')
-    if (user) {
-      router.push('/')
+    const checkUser = async () => {
+      const user = localStorage.getItem('user')
+      if (user) {
+        router.push('/')
+      }
     }
-  }, [])
+    checkUser()
+  }, [router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -33,10 +37,10 @@ export default function LoginPage() {
       router.push('/')
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Login failed:', (error as any).response?.data || error.message)
+        //console.error('Login failed:', (error as any).response?.data || error.message)
         toast.error((error as any).response?.data?.message || 'Login failed. Please try again.')
       } else {
-        console.error('Login failed:', error)
+        //console.error('Login failed:', error)
         toast.error('An unexpected error occurred. Please try again.')
       }
     }

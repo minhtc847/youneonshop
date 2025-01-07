@@ -19,7 +19,7 @@ export default function Navbar() {
     }
     window.addEventListener('scroll', handleScroll)
 
-    const checkLoginStatus = () => {
+    const checkLoginStatus = async () => {
       const user = localStorage.getItem('user')
       setIsLoggedIn(!!user)
     }
@@ -55,7 +55,6 @@ export default function Navbar() {
             <NavLink href="/products" className="px-2">Products</NavLink>
             <NavLink href="/design" className="px-2">Design Your Own</NavLink>
             <NavLink href="/about" className="px-2">About</NavLink>
-            <NavLink href="/contact" className="px-2">Contact</NavLink>
             {isLoggedIn ? (
               <div className="flex items-center space-x-2">
                 <Button asChild variant="outline" size="sm" className="text-white border-white hover:bg-neon-blue hover:text-black transition-colors duration-300 w-24 bg-black">
