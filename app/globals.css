@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -26,12 +26,11 @@
     --radius: 0.5rem;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
   }
@@ -77,7 +76,6 @@
   0% {
     text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
   }
-
   100% {
     text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
   }
@@ -137,3 +135,18 @@
   background-color: #1e1e1e;
   color: #ff00ff;
 }
+
+@layer utilities {
+  .hover-glow-blue:hover {
+    box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+  }
+
+  .hover-glow-pink:hover {
+    box-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+  }
+
+  .hover-glow-yellow:hover {
+    box-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
+  }
+}
+

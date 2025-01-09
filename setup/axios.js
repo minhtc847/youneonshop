@@ -1,4 +1,3 @@
-// setup/externalAxios.js
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
@@ -38,3 +37,4 @@ externalAxios.interceptors.response.use(
 );
 
 export default externalAxios
+

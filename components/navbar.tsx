@@ -3,15 +3,24 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Menu, X, User } from 'lucide-react'
+import { ShoppingCart, Menu, X, User, LogOut } from 'lucide-react'
 import Logo from './logo'
 import { useRouter } from 'next/navigation'
-import { logoutUser } from '@/service/userServices'
+import { signOut, useSession } from 'next-auth/react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const router = useRouter()
+  const { data: session, status } = useSession()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,30 +28,18 @@ export default function Navbar() {
     }
     window.addEventListener('scroll', handleScroll)
 
-    const checkLoginStatus = async () => {
-      const user = localStorage.getItem('user')
-      setIsLoggedIn(!!user)
-    }
-
-    // Check login status immediately and set up interval
-    checkLoginStatus()
-    const intervalId = setInterval(checkLoginStatus, 1000) // Check every second
-
-    // Listen for storage events (in case of logout in another tab)
-    window.addEventListener('storage', checkLoginStatus)
-
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('storage', checkLoginStatus)
-      clearInterval(intervalId)
     }
   }, [])
 
-  const handleLogout = () => {
-    //await logoutUser();
-    localStorage.removeItem('user')
-    setIsLoggedIn(false)
-    router.push('/login')
+  useEffect(() => {
+    console.log('Session status:', status)
+    console.log('Session data:', session)
+  }, [status, session])
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' })
   }
 
   return (
@@ -55,15 +52,28 @@ export default function Navbar() {
             <NavLink href="/products" className="px-2">Products</NavLink>
             <NavLink href="/design" className="px-2">Design Your Own</NavLink>
             <NavLink href="/about" className="px-2">About</NavLink>
-            {isLoggedIn ? (
-              <div className="flex items-center space-x-2">
-                <Button asChild variant="outline" size="sm" className="text-white border-white hover:bg-neon-blue hover:text-black transition-colors duration-300 w-24 bg-black">
-                  <Link href="/account">Account</Link>
-                </Button>
-                <Button onClick={handleLogout} variant="outline" size="sm" className="text-white border-white hover:bg-neon-pink hover:text-black transition-colors duration-300 w-24 bg-black">
-                  Logout
-                </Button>
-              </div>
+            {status === 'authenticated' ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-white border-white hover:bg-neon-blue hover:text-black transition-colors duration-300 bg-black">
+                    <User className="mr-2 h-4 w-4" /> Account
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => router.push('/account')}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/orders')}>
+                    Orders
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button asChild variant="outline" size="sm" className="text-white border-white hover:bg-neon-blue hover:text-black transition-colors duration-300 w-24 bg-black">
                 <Link href="/login">Login</Link>
@@ -89,7 +99,7 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-black/90 backdrop-blur-md">
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-            {isLoggedIn ? (
+            {status === 'authenticated' ? (
               <>
                 <Button asChild variant="ghost" size="sm" className="text-white hover:text-neon-blue transition-colors duration-300 justify-start">
                   <Link href="/account">
@@ -98,6 +108,7 @@ export default function Navbar() {
                   </Link>
                 </Button>
                 <Button onClick={handleLogout} variant="ghost" size="sm" className="text-white hover:text-neon-pink transition-colors duration-300 justify-start">
+                  <LogOut className="h-5 w-5 mr-2" />
                   Logout
                 </Button>
               </>
@@ -113,7 +124,6 @@ export default function Navbar() {
             <NavLink href="/products">Products</NavLink>
             <NavLink href="/design">Design Your Own</NavLink>
             <NavLink href="/about">About</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
             <Button variant="ghost" size="sm" className="text-white hover:text-neon-yellow transition-colors duration-300 justify-start">
               <ShoppingCart className="h-5 w-5 mr-2" />
               Cart (0)

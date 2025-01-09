@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button"
 export default function AboutPage() {
   return (
     <div className="container mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold mb-8 text-center text-neon-blue">About YOUNEON</h1>
-
+      <h1 className="text-4xl font-bold mb-8 text-center text-neon-blue">About Neon Lights</h1>
+      
       <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
         <div>
           <Image
             src="/placeholder.svg?height=400&width=600"
-            alt="YOUNEON Workshop"
+            alt="Neon Lights Workshop"
             width={600}
             height={400}
             className="rounded-lg shadow-lg"
@@ -19,7 +19,7 @@ export default function AboutPage() {
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-neon-pink">Our Story</h2>
           <p className="text-gray-300 mb-4">
-            Founded in 2010, YOUNEON has been at the forefront of bringing vibrant, custom-made neon signs to homes and businesses around the world. Our passion for craftsmanship and dedication to quality has made us a leader in the neon lighting industry.
+            Founded in 2010, Neon Lights has been at the forefront of bringing vibrant, custom-made neon signs to homes and businesses around the world. Our passion for craftsmanship and dedication to quality has made us a leader in the neon lighting industry.
           </p>
           <p className="text-gray-300 mb-4">
             What started as a small workshop in a garage has grown into a global brand, but our commitment to handcrafted quality and personal service remains unchanged.
@@ -30,7 +30,7 @@ export default function AboutPage() {
       <div className="text-center mb-16">
         <h2 className="text-2xl font-semibold mb-4 text-neon-yellow">Our Mission</h2>
         <p className="text-gray-300 max-w-2xl mx-auto">
-          At YOUNEON, our mission is to illuminate the world with creativity. We believe that lighting is more than just functionality – it's an art form that can transform spaces and evoke emotions. Our goal is to provide unique, high-quality neon products that allow our customers to express their individuality and bring their visions to life.
+          At Neon Lights, our mission is to illuminate the world with creativity. We believe that lighting is more than just functionality – it's an art form that can transform spaces and evoke emotions. Our goal is to provide unique, high-quality neon products that allow our customers to express their individuality and bring their visions to life.
         </p>
       </div>
 
