@@ -13,8 +13,8 @@ import { toast } from 'react-toastify'
 import { signIn } from 'next-auth/react'
 
 export default function RegisterPage() {
-  const [first_name, setFirstName] = useState('')
-  const [last_name, setLastName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const router = useRouter()
@@ -22,7 +22,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await registerNewUser({ email, first_name, last_name, password })
+      await registerNewUser({ email, firstName, lastName, password })
       toast.success('Registration successful! Please log in.')
       router.push('/login')
     } catch (error) {
@@ -47,7 +47,7 @@ export default function RegisterPage() {
               <Input
                 id="firstName"
                 type="text"
-                value={first_name}
+                value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
                 className="bg-gray-800 border-gray-700 text-white focus:border-neon-pink focus:ring-neon-pink transition-all duration-300"
@@ -58,7 +58,7 @@ export default function RegisterPage() {
               <Input
                 id="lastName"
                 type="text"
-                value={last_name}
+                value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
                 className="bg-gray-800 border-gray-700 text-white focus:border-neon-pink focus:ring-neon-pink transition-all duration-300"

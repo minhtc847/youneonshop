@@ -52,6 +52,7 @@ module.exports = {
         'neon-blue': '#00ffff',
         'neon-pink': '#ff00ff',
         'neon-yellow': '#ffff00',
+        'neon-green': '#39ff14',
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -52,6 +52,8 @@ export default function Navbar() {
             <NavLink href="/products" className="px-2">Products</NavLink>
             <NavLink href="/design" className="px-2">Design Your Own</NavLink>
             <NavLink href="/about" className="px-2">About</NavLink>
+            <NavLink href="/contact" className="px-2">Contact</NavLink>
+            <NavLink href="/faq" className="px-2">FAQ</NavLink>
             {status === 'authenticated' ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -124,6 +126,8 @@ export default function Navbar() {
             <NavLink href="/products">Products</NavLink>
             <NavLink href="/design">Design Your Own</NavLink>
             <NavLink href="/about">About</NavLink>
+            <NavLink href="/contact">Contact</NavLink>
+            <NavLink href="/faq">FAQ</NavLink>
             <Button variant="ghost" size="sm" className="text-white hover:text-neon-yellow transition-colors duration-300 justify-start">
               <ShoppingCart className="h-5 w-5 mr-2" />
               Cart (0)

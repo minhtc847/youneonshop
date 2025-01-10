@@ -48,6 +48,10 @@
   color: #ffff00;
 }
 
+.text-neon-green {
+  color: #39ff14;
+}
+
 .bg-neon-blue {
   background-color: #00ffff;
 }
@@ -60,6 +64,10 @@
   background-color: #ffff00;
 }
 
+.bg-neon-green {
+  background-color: #39ff14;
+}
+
 .hover\:shadow-glow-blue:hover {
   box-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff, 0 0 45px #00ffff;
 }
@@ -70,6 +78,14 @@
 
 .hover\:shadow-glow-yellow:hover {
   box-shadow: 0 0 15px #ffff00, 0 0 30px #ffff00, 0 0 45px #ffff00;
+}
+
+.hover\:shadow-glow-green:hover {
+  box-shadow: 0 0 15px #39ff14, 0 0 30px #39ff14, 0 0 45px #39ff14;
+}
+
+.hover\:shadow-glow-red:hover {
+  box-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000, 0 0 45px #ff0000;
 }
 
 @keyframes glow {
@@ -100,6 +116,11 @@
 
 /* Custom styles for react-toastify */
 .Toastify__toast {
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.Toastify__toast.Toastify__toast {
   border-radius: 8px;
   font-family: inherit;
 }
@@ -147,6 +168,10 @@
 
   .hover-glow-yellow:hover {
     box-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
+  }
+
+  .hover-glow-green:hover {
+    box-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14;
   }
 }
 

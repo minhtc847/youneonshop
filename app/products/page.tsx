@@ -9,20 +9,10 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { motion, AnimatePresence } from 'framer-motion'
+import { ShoppingCart, Star, Filter, SortAsc, SortDesc } from 'lucide-react'
+import { products, Product } from '@/data/products'
 
-//300*300
-const products = [
-  { id: 1, name: 'Blue Wave', price: 129.99, image: '/product-2.jpg', category: 'Abstract' },
-  { id: 2, name: 'Pink Flamingo', price: 149.99, image: '/product-2.jpg', category: 'Animals' },
-  { id: 3, name: 'Yellow Bolt', price: 99.99, image: '/product-2.jpg', category: 'Abstract' },
-  { id: 4, name: 'Green Leaf', price: 139.99, image: '/product-2.jpg', category: 'Nature' },
-  { id: 5, name: 'Purple Haze', price: 159.99, image: '/product-2.jpg', category: 'Abstract' },
-  { id: 6, name: 'Red Heart', price: 119.99, image: '/product-2.jpg', category: 'Symbols' },
-  { id: 7, name: 'Orange Sunset', price: 134.99, image: '/product-2.jpg', category: 'Nature' },
-  { id: 8, name: 'Teal Ocean', price: 144.99, image: '/product-2.jpg', category: 'Nature' },
-]
-
-const categories = [...new Set(products.map(product => product.category))]
+const categories = [...new Set(products.map(product => product.category).filter(Boolean))]
 
 const themes = {
   blue: { primary: '#00ffff', secondary: '#0080ff' },
@@ -31,20 +21,29 @@ const themes = {
 }
 
 export default function ProductsPage() {
-  const [filteredProducts, setFilteredProducts] = useState(products)
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState([0, 200])
+  const [priceRange, setPriceRange] = useState([0, 2000000])
   const [theme, setTheme] = useState<keyof typeof themes>('blue')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   useEffect(() => {
     const filtered = products.filter(product =>
       (searchTerm === '' || product.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedCategories.length === 0 || selectedCategories.includes(product.category)) &&
+      (selectedCategories.length === 0 || (product.category && selectedCategories.includes(product.category))) &&
       (product.price >= priceRange[0] && product.price <= priceRange[1])
-    )
-    setFilteredProducts(filtered)
-  }, [searchTerm, selectedCategories, priceRange])
+    );
+    const sorted = filtered.sort((a, b) =>
+      sortOrder === 'asc' ? a.price - b.price : b.price - a.price
+    );
+    setFilteredProducts(sorted);
+  }, [searchTerm, selectedCategories, priceRange, sortOrder, products]);
+
+  useEffect(() => {
+    setFilteredProducts(products)
+  }, [products])
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev =>
@@ -52,6 +51,10 @@ export default function ProductsPage() {
         ? prev.filter(c => c !== category)
         : [...prev, category]
     )
+  }
+
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
   }
 
   return (
@@ -81,7 +84,7 @@ export default function ProductsPage() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            {(Object.keys(themes) as Array<keyof typeof themes>).map((color) => (
+            {/* {(Object.keys(themes) as Array<keyof typeof themes>).map((color) => (
               <button
                 key={color}
                 className={`w-10 h-10 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform transform hover:scale-110 ${theme === color ? 'ring-2 ring-offset-2 scale-110' : ''}`}
@@ -89,7 +92,7 @@ export default function ProductsPage() {
                 onClick={() => setTheme(color)}
                 aria-label={`Switch to ${color} theme`}
               />
-            ))}
+            ))} */}
           </motion.div>
         </div>
         <div className="absolute inset-0 opacity-50">
@@ -97,9 +100,9 @@ export default function ProductsPage() {
         </div>
       </header>
       <main className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="flex flex-col md:flex-row gap-8 mb-8">
           <motion.div
-            className="md:col-span-1 space-y-6 bg-gray-800 bg-opacity-50 p-6 rounded-lg shadow-lg backdrop-blur-md"
+            className={`md:w-1/4 space-y-6 bg-gray-800 bg-opacity-50 p-6 rounded-lg shadow-lg backdrop-blur-md ${isFilterOpen ? 'block' : 'hidden md:block'}`}
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
@@ -133,19 +136,35 @@ export default function ProductsPage() {
               <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Price Range</Label>
               <Slider
                 min={0}
-                max={200}
-                step={10}
+                max={2000000}
+                step={100000}
                 value={priceRange}
                 onValueChange={setPriceRange}
                 className="my-4"
               />
               <div className="flex justify-between text-white">
-                <span>${priceRange[0]}</span>
-                <span>${priceRange[1]}</span>
+                <span>₫{priceRange[0].toLocaleString()}</span>
+                <span>₫{priceRange[1].toLocaleString()}</span>
               </div>
             </div>
           </motion.div>
-          <div className="md:col-span-3">
+          <div className="md:w-3/4">
+            <div className="flex justify-between items-center mb-6">
+              <Button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="md:hidden bg-gray-700 hover:bg-gray-600 text-white"
+              >
+                <Filter className="mr-2 h-4 w-4" />
+                {isFilterOpen ? 'Hide Filters' : 'Show Filters'}
+              </Button>
+              <Button
+                onClick={toggleSortOrder}
+                className="bg-gray-700 hover:bg-gray-600 text-white"
+              >
+                {sortOrder === 'asc' ? <SortAsc className="mr-2 h-4 w-4" /> : <SortDesc className="mr-2 h-4 w-4" />}
+                Sort by Price
+              </Button>
+            </div>
             <AnimatePresence>
               <motion.div
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -171,6 +190,7 @@ export default function ProductsPage() {
                             src={product.image}
                             alt={product.name}
                             fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             style={{ objectFit: 'cover' }}
                             className="transition-all duration-300 group-hover:opacity-75"
                           />
@@ -182,14 +202,24 @@ export default function ProductsPage() {
                         </div>
                         <div className="p-6">
                           <h3 className="text-xl font-semibold mb-2 group-hover:text-current transition-colors duration-300" style={{ color: themes[theme].primary }}>{product.name}</h3>
-                          <p className="text-gray-400 mb-2">{product.category}</p>
-                          <p className="font-bold text-lg" style={{ color: themes[theme].secondary }}>${product.price.toFixed(2)}</p>
-                          <Button className="w-full mt-4 text-black font-bold py-2 px-4 rounded-full transition-all duration-300"
+                          <p className="text-gray-400 mb-2 line-clamp-2">{product.description}</p>
+                          <div className="flex items-center mb-2">
+                            {product.rating && [...Array(5)].map((_, i) => (
+                              <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400'}`} />
+                            ))}
+                            {product.rating && <span className="ml-2 text-gray-400">({product.rating})</span>}
+                          </div>
+                          <p className="font-bold text-lg" style={{ color: themes[theme].secondary }}>₫{product.price.toLocaleString()}</p>
+                          <Button
+                            className="w-full mt-4 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 bg-gray-700 hover:text-black hover:bg-opacity-90"
                             style={{
-                              backgroundColor: themes[theme].primary,
-                              boxShadow: `0 0 10px ${themes[theme].primary}, 0 0 20px ${themes[theme].primary}`,
-                            }}>
-                            Add to Cart
+                              ':hover': {
+                                backgroundColor: themes[theme].primary,
+                                boxShadow: `0 0 20px ${themes[theme].primary}, 0 0 40px ${themes[theme].primary}`,
+                              }
+                            }}
+                          >
+                            <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
                           </Button>
                         </div>
                       </div>
@@ -204,3 +234,4 @@ export default function ProductsPage() {
     </div>
   )
 }
+
