@@ -1,6 +1,5 @@
 'use client'
 
-import { use } from 'react'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,20 +10,23 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ShoppingCart, Heart, Star, ChevronRight, Truck, RefreshCcw, Shield } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { products, Product } from '@/data/products'
+import { fetchProductById, Product } from '@/data/products'
 
-export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  // Sử dụng use() để “unwrap” params (API experimental)
-  const { id } = use(params)
-
-  // Tìm sản phẩm dựa trên id
-  const product: Product | undefined = products.find((p) => p.id === id)
-
+export default function ProductPage({ params }: { params: { id: string } }) {
+  const [product, setProduct] = useState<Product | null>(null)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
-    // Mô phỏng độ trễ load
+    const loadProduct = async () => {
+      const fetchedProduct = await fetchProductById(params.id);
+      setProduct(fetchedProduct);
+    };
+    loadProduct();
+  }, [params.id]);
+
+  useEffect(() => {
+    // Simulate loading delay
     const timer = setTimeout(() => {
       document.body.style.backgroundColor = '#000'
     }, 100)
@@ -32,7 +34,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   }, [])
 
   if (!product) {
-    return <div>Product not found</div>
+    return <div>Loading...</div>
   }
 
   return (
@@ -48,7 +50,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
       <div className="grid md:grid-cols-2 gap-12">
         {/* Product Images */}
-        <motion.div
+        <motion.div 
           className="space-y-4"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -56,34 +58,17 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         >
           <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-900">
             <Image
-              src={product.image_list ? product.image_list[selectedImage] : product.image}
+              src={product.image}
               alt={product.name}
               fill
               className="object-cover transition-all duration-300 hover:scale-105"
             />
           </div>
-          {product.image_list && (
-            <div className="flex space-x-2 overflow-x-auto">
-              {product.image_list.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`relative w-20 h-20 rounded-md overflow-hidden ${selectedImage === index ? 'ring-2 ring-neon-blue' : ''}`}
-                >
-                  <Image
-                    src={image}
-                    alt={`${product.name} - Image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Add thumbnail images here if available */}
         </motion.div>
 
         {/* Product Info */}
-        <motion.div
+        <motion.div 
           className="space-y-6"
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -91,7 +76,25 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         >
           <h1 className="text-4xl font-bold text-neon-blue">{product.name}</h1>
           <p className="text-3xl font-bold text-neon-yellow">₫{product.price.toLocaleString()}</p>
-          <p className="text-gray-300">{product.description}</p>
+
+          {/* Size Selection */}
+          <div>
+            <Label htmlFor="size" className="text-lg mb-2 block text-neon-pink">Size</Label>
+            <RadioGroup id="size" defaultValue="medium" className="flex space-x-4">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="small" id="small" />
+                <Label htmlFor="small">Small</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="medium" id="medium" />
+                <Label htmlFor="medium">Medium</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="large" id="large" />
+                <Label htmlFor="large">Large</Label>
+              </div>
+            </RadioGroup>
+          </div>
 
           {/* Quantity */}
           <div>
@@ -159,37 +162,29 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             </TabsContent>
             <TabsContent value="specifications" className="mt-4">
               <ul className="space-y-2">
-                <li className="flex justify-between">
-                  <span className="text-neon-blue">Category</span>
-                  <span className="text-white">{product.category}</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-neon-blue">Material</span>
-                  <span className="text-white">LED Neon Flex</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-neon-blue">Power Source</span>
-                  <span className="text-white">AC Adapter (included)</span>
-                </li>
+                {product.specifications?.map((spec, index) => (
+                  <li key={index} className="flex justify-between">
+                    <span className="text-neon-blue">{spec.name}</span>
+                    <span className="text-white">{spec.value}</span>
+                  </li>
+                ))}
               </ul>
             </TabsContent>
             <TabsContent value="reviews" className="mt-4">
               <div className="space-y-4">
-                {product.rating && (
-                  <div className="border-b border-gray-700 pb-4">
+                {product.reviews?.map((review, index) => (
+                  <div key={index} className="border-b border-gray-700 pb-4">
                     <div className="flex items-center mb-2">
-                      <span className="font-bold text-neon-pink mr-2">Average Rating</span>
+                      <span className="font-bold text-neon-pink mr-2">{review.author}</span>
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'text-neon-yellow fill-neon-yellow' : 'text-gray-400'}`} />
+                          <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-neon-yellow fill-neon-yellow' : 'text-gray-400'}`} />
                         ))}
                       </div>
-                      <span className="ml-2 text-gray-300">({product.rating})</span>
                     </div>
-                    <p className="text-gray-300">Based on customer reviews</p>
+                    <p className="text-gray-300">{review.comment}</p>
                   </div>
-                )}
-                {/* Add more review content here if available */}
+                ))}
               </div>
             </TabsContent>
           </Tabs>
@@ -197,7 +192,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       </div>
 
       {/* Related Products */}
-      <motion.div
+      <motion.div 
         className="mt-16"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -205,7 +200,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       >
         <h2 className="text-2xl font-bold mb-6 text-neon-blue">Related Products</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {products.filter(p => p.id !== product.id).slice(0, 4).map((relatedProduct) => (
+          {products.slice(0, 4).map((relatedProduct) => (
             <Link key={relatedProduct.id} href={`/products/${relatedProduct.id}`} className="group">
               <div className="bg-gray-800 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-glow-blue">
                 <div className="relative aspect-square">

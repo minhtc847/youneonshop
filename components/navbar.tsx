@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Menu, X, User, LogOut } from 'lucide-react'
+import { ShoppingCart, Menu, X, User, LogOut, ShoppingBag } from 'lucide-react'
 import Logo from './logo'
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
@@ -19,6 +19,7 @@ import {
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [cartItems, setCartItems] = useState([])
   const router = useRouter()
   const { data: session, status } = useSession()
 
@@ -38,6 +39,11 @@ export default function Navbar() {
     console.log('Session data:', session)
   }, [status, session])
 
+  useEffect(() => {
+    // In a real application, you would fetch this from an API or local storage
+    setCartItems([{ id: 1 }, { id: 2 }, { id: 3 }]) // Mock data
+  }, [])
+
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' })
   }
@@ -54,6 +60,15 @@ export default function Navbar() {
             <NavLink href="/about" className="px-2">About</NavLink>
             <NavLink href="/contact" className="px-2">Contact</NavLink>
             <NavLink href="/faq" className="px-2">FAQ</NavLink>
+            <NavLink href="/orders" className="px-2">Orders</NavLink>
+            <Button asChild variant="ghost" size="icon" className="text-white hover:text-neon-yellow transition-colors duration-300 relative">
+              <Link href="/cart">
+                <ShoppingBag className="h-5 w-5" />
+                <span className="absolute top-0 right-0 bg-neon-pink text-black text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {cartItems.length}
+                </span>
+              </Link>
+            </Button>
             {status === 'authenticated' ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -81,12 +96,6 @@ export default function Navbar() {
                 <Link href="/login">Login</Link>
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="text-white hover:text-neon-yellow transition-colors duration-300 relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute top-0 right-0 bg-neon-pink text-black text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                0
-              </span>
-            </Button>
           </div>
           <Button
             variant="ghost"
@@ -128,9 +137,13 @@ export default function Navbar() {
             <NavLink href="/about">About</NavLink>
             <NavLink href="/contact">Contact</NavLink>
             <NavLink href="/faq">FAQ</NavLink>
-            <Button variant="ghost" size="sm" className="text-white hover:text-neon-yellow transition-colors duration-300 justify-start">
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              Cart (0)
+            <NavLink href="/orders">Orders</NavLink>
+            <NavLink href="/cart">Cart</NavLink>
+            <Button asChild variant="ghost" size="sm" className="text-white hover:text-neon-yellow transition-colors duration-300 justify-start">
+              <Link href="/cart">
+                <ShoppingBag className="h-5 w-5 mr-2" />
+                Cart ({cartItems.length})
+              </Link>
             </Button>
           </div>
         </div>

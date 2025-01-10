@@ -10,9 +10,9 @@ import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, Star, Filter, SortAsc, SortDesc } from 'lucide-react'
-import { products, Product } from '@/data/products'
+import { fetchProducts, Products } from '@/data/products'
 
-const categories = [...new Set(products.map(product => product.category).filter(Boolean))]
+const categories = [...new Set(products.map(products => products.category))]
 
 const themes = {
   blue: { primary: '#00ffff', secondary: '#0080ff' },
@@ -21,7 +21,7 @@ const themes = {
 }
 
 export default function ProductsPage() {
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products)
+  const [filteredProducts, setFilteredProducts] = useState<Products[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState([0, 2000000])
@@ -30,20 +30,24 @@ export default function ProductsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   useEffect(() => {
-    const filtered = products.filter(product =>
+    const filtered = products.filter(products =>
       (searchTerm === '' || product.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedCategories.length === 0 || (product.category && selectedCategories.includes(product.category))) &&
+      (selectedCategories.length === 0 || selectedCategories.includes(product.category)) &&
       (product.price >= priceRange[0] && product.price <= priceRange[1])
-    );
+    )
     const sorted = filtered.sort((a, b) =>
       sortOrder === 'asc' ? a.price - b.price : b.price - a.price
-    );
-    setFilteredProducts(sorted);
-  }, [searchTerm, selectedCategories, priceRange, sortOrder, products]);
+    )
+    setFilteredProducts(sorted)
+  }, [searchTerm, selectedCategories, priceRange, sortOrder, products])
 
   useEffect(() => {
-    setFilteredProducts(products)
-  }, [products])
+    const loadProducts = async () => {
+      const products = await fetchProducts();
+      setFilteredProducts(products);
+    };
+    loadProducts();
+  }, []);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev =>
@@ -84,7 +88,7 @@ export default function ProductsPage() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            {/* {(Object.keys(themes) as Array<keyof typeof themes>).map((color) => (
+            {(Object.keys(themes) as Array<keyof typeof themes>).map((color) => (
               <button
                 key={color}
                 className={`w-10 h-10 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform transform hover:scale-110 ${theme === color ? 'ring-2 ring-offset-2 scale-110' : ''}`}
@@ -92,7 +96,7 @@ export default function ProductsPage() {
                 onClick={() => setTheme(color)}
                 aria-label={`Switch to ${color} theme`}
               />
-            ))} */}
+            ))}
           </motion.div>
         </div>
         <div className="absolute inset-0 opacity-50">
@@ -191,6 +195,8 @@ export default function ProductsPage() {
                             alt={product.name}
                             fill
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            placeholder="blur"
+                            blurDataURL={product.placeholder}
                             style={{ objectFit: 'cover' }}
                             className="transition-all duration-300 group-hover:opacity-75"
                           />
@@ -202,22 +208,16 @@ export default function ProductsPage() {
                         </div>
                         <div className="p-6">
                           <h3 className="text-xl font-semibold mb-2 group-hover:text-current transition-colors duration-300" style={{ color: themes[theme].primary }}>{product.name}</h3>
-                          <p className="text-gray-400 mb-2 line-clamp-2">{product.description}</p>
+                          <p className="text-gray-400 mb-2">{product.category}</p>
                           <div className="flex items-center mb-2">
-                            {product.rating && [...Array(5)].map((_, i) => (
+                            {[...Array(5)].map((_, i) => (
                               <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400'}`} />
                             ))}
-                            {product.rating && <span className="ml-2 text-gray-400">({product.rating})</span>}
+                            <span className="ml-2 text-gray-400">({product.rating})</span>
                           </div>
                           <p className="font-bold text-lg" style={{ color: themes[theme].secondary }}>₫{product.price.toLocaleString()}</p>
                           <Button
-                            className="w-full mt-4 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 bg-gray-700 hover:text-black hover:bg-opacity-90"
-                            style={{
-                              ':hover': {
-                                backgroundColor: themes[theme].primary,
-                                boxShadow: `0 0 20px ${themes[theme].primary}, 0 0 40px ${themes[theme].primary}`,
-                              }
-                            }}
+                            className={`w-full mt-4 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 bg-gray-700 hover:text-black hover:bg-opacity-90 hover:bg-[${themes[theme].primary}] hover:shadow-[0_0_20px_${themes[theme].primary},_0_0_40px_${themes[theme].primary}]`}
                           >
                             <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
                           </Button>
