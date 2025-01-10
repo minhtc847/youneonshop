@@ -34,9 +34,115 @@ definitions:
       password:
         type: string
     type: object
+  main.envelope:
+    additionalProperties: {}
+    type: object
 info:
   contact: {}
 paths:
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Get all categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      summary: Get all categories
+      tags:
+      - products
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of products, sorted by "name", "price", "modified_at",
+        "-name", "-price", "-modified_at"
+      parameters:
+      - description: Category
+        in: query
+        name: category
+        type: string
+      - collectionFormat: csv
+        description: Tags
+        in: query
+        items:
+          type: string
+        name: tags
+        type: array
+      - description: Name
+        in: query
+        name: name
+        type: string
+      - description: Price from
+        in: query
+        name: price_from
+        type: integer
+      - description: Price to
+        in: query
+        name: price_to
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Sort
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      summary: List products
+      tags:
+      - products
+  /products/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      summary: Get a product
+      tags:
+      - products
+  /tags:
+    get:
+      consumes:
+      - application/json
+      description: Get all tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      summary: Get all tags
+      tags:
+      - products
   /users:
     post:
       consumes:

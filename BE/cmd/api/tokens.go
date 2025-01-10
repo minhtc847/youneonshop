@@ -96,7 +96,7 @@ func GenerateToken() string {
 // @Tags users
 // @Success 200 {string} message
 // @Router /users/logout [post]
-func (app *application) logout(w http.ResponseWriter, r *http.Request) {
+func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	token := app.contextGetToken(r)
 	userId := app.contextGetUser(r).ID.String()

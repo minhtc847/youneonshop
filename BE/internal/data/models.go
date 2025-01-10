@@ -19,10 +19,35 @@ type Models struct {
 		Update(profile *User) error
 		Get(id uuid.UUID) (*User, error)
 	}
+	Products interface {
+		Insert(product *Product) error
+		Get(id uuid.UUID) (*Product, error)
+		Update(product *Product) error
+		Delete(id uuid.UUID) error
+		GetAll(filters Filters, category string, tags []string, name string, priceFrom int, priceTo int) ([]*Product, Metadata, error)
+	}
+	Categories interface {
+		Insert(category *Category) error
+		Get(id uuid.UUID) (*Category, error)
+		Update(category *Category) error
+		Delete(id uuid.UUID) error
+		GetAll() ([]*Category, error)
+	}
+	Tags interface {
+		Insert(tag *Tag) error
+		Get(id uuid.UUID) (*Tag, error)
+		Update(tag *Tag) error
+		Delete(id uuid.UUID) error
+		GetAll() ([]*Tag, error)
+		GetAllTagByProductID(id uuid.UUID) ([]*Tag, error)
+	}
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Users: UserModel{DB: db},
+		Users:      UserModel{DB: db},
+		Products:   ProductModel{DB: db},
+		Categories: CategoryModel{DB: db},
+		Tags:       TagModel{DB: db},
 	}
 }
