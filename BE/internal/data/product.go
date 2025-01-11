@@ -23,6 +23,7 @@ type Product struct {
 	IsDeleted   bool      `json:"is_deleted"`
 	CreatedAt   time.Time `json:"created_at"`
 	ModifiedAt  time.Time `json:"modified_at"`
+	Tags        []string  `json:"tags"` //Not in DB
 }
 
 type ProductModel struct {
@@ -49,21 +50,36 @@ func (m ProductModel) Insert(product *Product) error {
 }
 func (m ProductModel) GetAll(filters Filters, category string, tags []string, name string, priceFrom int, priceTo int) ([]*Product, Metadata, error) {
 	query := fmt.Sprintf(`
-		SELECT count(*) OVER(), p.id, p.name, p.price, p.image, p.image_list, p.description, 
-		       p.category_id, p.inventory_id, p.discount_id, p.is_deleted, p.created_at, p.modified_at
-		FROM product p
-		LEFT JOIN product_category c ON p.category_id = c.id
-		LEFT JOIN tag_product pt ON p.id = pt.product_id
-		LEFT JOIN tag t ON pt.tag_id = t.id
-		WHERE (c.name = $1 OR $1 = '')
-		  AND (to_tsvector('simple', p.name) @@ plainto_tsquery('simple', $2) OR $2 = '')
-		  AND (p.price >= $3 OR $3 = 0)
-		  AND (p.price <= $4 OR $4 = 0)
-		  AND (t.name = ANY($5) OR $5 = '{}')
-		  AND p.is_deleted = false
-		ORDER BY %s %s, p.id ASC
-		LIMIT $6 OFFSET $7
-	`, filters.sortColumn(), filters.sortDirection())
+SELECT count(*) OVER(), 
+       p.id, 
+       p.name, 
+       p.price, 
+       p.image, 
+       p.image_list, 
+       p.description, 
+       p.category_id, 
+       p.inventory_id, 
+       p.discount_id, 
+       p.is_deleted, 
+       p.created_at, 
+       p.modified_at,
+       array_agg(t.name) AS tags
+FROM product p
+LEFT JOIN product_category c ON p.category_id = c.id
+LEFT JOIN tag_product pt ON p.id = pt.product_id
+LEFT JOIN tag t ON pt.tag_id = t.id
+WHERE (c.name = $1 OR $1 = '')
+  AND (to_tsvector('simple', p.name) @@ plainto_tsquery('simple', $2) OR $2 = '')
+  AND (p.price >= $3 OR $3 = 0)
+  AND (p.price <= $4 OR $4 = 0)
+  AND ($5 = '{}'::text[] OR t.name = ANY($5))
+  AND p.is_deleted = false
+GROUP BY p.id, p.name, p.price, p.image, p.image_list, p.description, 
+         p.category_id, p.inventory_id, p.discount_id, 
+         p.is_deleted, p.created_at, p.modified_at
+ORDER BY %s %s, p.id ASC
+LIMIT $6 OFFSET $7
+`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -102,6 +118,7 @@ func (m ProductModel) GetAll(filters Filters, category string, tags []string, na
 			&product.IsDeleted,
 			&product.CreatedAt,
 			&product.ModifiedAt,
+			pq.Array(&product.Tags),
 		)
 		if err != nil {
 			return nil, Metadata{}, err
