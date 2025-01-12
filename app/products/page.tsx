@@ -1,18 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingCart, Star, Filter, SortAsc, SortDesc } from 'lucide-react'
-import { fetchProducts, Products } from '@/data/products'
-
-const categories = [...new Set(products.map(products => products.category))]
+import { ShoppingCart, Filter, SortAsc, SortDesc } from 'lucide-react'
+import { Product, ProductsResponse } from '@/types/product'
+import { listProduct, getCategories, getTags } from '@/service/productServices'
+import ProductTags from '@/components/product-tags'
 
 const themes = {
   blue: { primary: '#00ffff', secondary: '#0080ff' },
@@ -21,45 +22,168 @@ const themes = {
 }
 
 export default function ProductsPage() {
-  const [filteredProducts, setFilteredProducts] = useState<Products[]>([])
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const [products, setProducts] = useState<Product[]>([])
+  const [metadata, setMetadata] = useState<ProductsResponse['metadata'] | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [categories, setCategories] = useState<string[]>([])
+  const [tags, setTags] = useState<string[]>([])
+
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState([0, 2000000])
-  const [theme, setTheme] = useState<keyof typeof themes>('blue')
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState([0, 10000000])
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [currentPage, setCurrentPage] = useState(1)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [theme, setTheme] = useState('blue')
+  const [error, setError] = useState<string | null>(null)
+
+  const updateQueryParams = useCallback((params: Record<string, string | string[] | null>) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === null) {
+        newSearchParams.delete(key);
+      } else if (Array.isArray(value)) {
+        newSearchParams.set(key, value.join(',')); // Chuyển mảng thành chuỗi phân tách bằng dấu phẩy
+      } else {
+        newSearchParams.set(key, value);
+      }
+    });
+
+    router.push(`/products?${newSearchParams.toString()}`);
+  }, [router, searchParams]);
+
+
+  const fetchProducts = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params: Record<string, string | string[]> = {
+        category: selectedCategory || '',
+        tags: selectedTags.join(','), // Chuyển mảng tags thành chuỗi phân tách bằng dấu phẩy
+        price_from: priceRange[0].toString(),
+        price_to: priceRange[1].toString(),
+        page: currentPage.toString(),
+        page_size: '20',
+        sort: sortOrder === 'asc' ? 'price' : '-price',
+      };
+
+      if (searchTerm) {
+        params.name = searchTerm;
+      }
+
+      const queryString = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach(v => queryString.append(key, v));
+        } else if (value) {
+          queryString.append(key, value);
+        }
+      });
+
+      const response = await fetch(`http://localhost:4000/products?${queryString.toString()}`);
+      const data = await response.json();
+
+      setProducts(data.products);
+      setMetadata(data.metadata);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setError('Failed to fetch products.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedCategory, selectedTags, priceRange, currentPage, sortOrder, searchTerm]);
 
   useEffect(() => {
-    const filtered = products.filter(products =>
-      (searchTerm === '' || product.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedCategories.length === 0 || selectedCategories.includes(product.category)) &&
-      (product.price >= priceRange[0] && product.price <= priceRange[1])
-    )
-    const sorted = filtered.sort((a, b) =>
-      sortOrder === 'asc' ? a.price - b.price : b.price - a.price
-    )
-    setFilteredProducts(sorted)
-  }, [searchTerm, selectedCategories, priceRange, sortOrder, products])
+    const fetchInitialData = async () => {
+      try {
+        const [categoriesData, tagsData] = await Promise.all([getCategories(), getTags()])
+        setCategories(categoriesData)
+        setTags(tagsData)
+
+        const categoryParam = searchParams.get('category')
+        if (categoryParam) {
+          setSelectedCategory(categoryParam)
+        }
+
+        const tagParam = searchParams.get('tags')
+        if (tagParam) {
+          setSelectedTags(tagParam.split(','))
+        }
+
+        const searchParam = searchParams.get('search')
+        if (searchParam) {
+          setSearchTerm(searchParam)
+        }
+
+        const sortParam = searchParams.get('sort')
+        if (sortParam === 'asc' || sortParam === 'desc') {
+          setSortOrder(sortParam)
+        }
+
+        const pageParam = searchParams.get('page')
+        if (pageParam) {
+          setCurrentPage(parseInt(pageParam, 10))
+        }
+
+        const minPriceParam = searchParams.get('price_from');
+        const maxPriceParam = searchParams.get('price_to');
+        if (minPriceParam && maxPriceParam) {
+          setPriceRange([parseInt(minPriceParam, 10), parseInt(maxPriceParam, 10)]);
+        }
+      } catch (error) {
+        console.error('Error fetching initial data:', error)
+      }
+    }
+
+    fetchInitialData()
+  }, [searchParams])
 
   useEffect(() => {
-    const loadProducts = async () => {
-      const products = await fetchProducts();
-      setFilteredProducts(products);
-    };
-    loadProducts();
-  }, []);
+    fetchProducts()
+  }, [fetchProducts])
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
+    setSelectedCategory(category === selectedCategory ? '' : category)
+    updateQueryParams({ category: category === selectedCategory ? null : category })
+  }
+
+  const handleTagChange = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
     )
   }
 
+  useEffect(() => {
+    updateQueryParams({ tags: selectedTags.length > 0 ? selectedTags : null })
+    fetchProducts()
+  }, [selectedTags, updateQueryParams, fetchProducts])
+
   const toggleSortOrder = () => {
-    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
+    const newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+    setSortOrder(newSortOrder)
+    updateQueryParams({ sort: newSortOrder })
   }
+
+  const handleSearch = () => {
+    updateQueryParams({ search: searchTerm || null })
+  }
+
+  const handlePriceRangeChange = (newPriceRange: number[]) => {
+    setPriceRange(newPriceRange);
+    updateQueryParams({
+      price_from: newPriceRange[0].toString(),
+      price_to: newPriceRange[1].toString(),
+    });
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
@@ -113,15 +237,20 @@ export default function ProductsPage() {
           >
             <div>
               <Label htmlFor="search" className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Search</Label>
-              <Input
-                id="search"
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-gray-700 text-white border-gray-600 focus:border-current"
-                style={{ '--tw-ring-color': themes[theme].primary } as React.CSSProperties}
-              />
+              <div className="flex">
+                <Input
+                  id="search"
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-gray-700 text-white border-gray-600 focus:border-current"
+                  style={{ '--tw-ring-color': themes[theme].primary } as React.CSSProperties}
+                />
+                <Button onClick={handleSearch} className="ml-2 bg-gray-700 hover:bg-gray-600 text-white">
+                  Search
+                </Button>
+              </div>
             </div>
             <div>
               <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Categories</Label>
@@ -129,7 +258,7 @@ export default function ProductsPage() {
                 <div key={category} className="flex items-center space-x-2 mb-2">
                   <Checkbox
                     id={category}
-                    checked={selectedCategories.includes(category)}
+                    checked={selectedCategory === category}
                     onCheckedChange={() => handleCategoryChange(category)}
                   />
                   <Label htmlFor={category} className="text-white">{category}</Label>
@@ -137,13 +266,26 @@ export default function ProductsPage() {
               ))}
             </div>
             <div>
+              <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Tags</Label>
+              {tags.map(tag => (
+                <div key={tag} className="flex items-center space-x-2 mb-2">
+                  <Checkbox
+                    id={tag}
+                    checked={selectedTags.includes(tag)}
+                    onCheckedChange={() => handleTagChange(tag)}
+                  />
+                  <Label htmlFor={tag} className="text-white">{tag}</Label>
+                </div>
+              ))}
+            </div>
+            <div>
               <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Price Range</Label>
               <Slider
                 min={0}
-                max={2000000}
+                max={10000000}
                 step={100000}
                 value={priceRange}
-                onValueChange={setPriceRange}
+                onValueChange={handlePriceRangeChange}
                 className="my-4"
               />
               <div className="flex justify-between text-white">
@@ -169,16 +311,33 @@ export default function ProductsPage() {
                 Sort by Price
               </Button>
             </div>
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong className="font-bold">Error: </strong>
+                <span className="block sm:inline">{error}</span>
+              </div>
+            )}
+            <ProductTags />
             <AnimatePresence>
               <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
                 initial="hidden"
                 animate="visible"
                 variants={{
                   visible: { transition: { staggerChildren: 0.1 } }
                 }}
               >
-                {filteredProducts.map((product) => (
+                {isLoading && (
+                  <div className="col-span-full flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-neon-blue"></div>
+                  </div>
+                )}
+                {!isLoading && products.length === 0 && (
+                  <div className="col-span-full text-center text-gray-400">
+                    No products found. Try adjusting your filters.
+                  </div>
+                )}
+                {products.map((product) => (
                   <motion.div
                     key={product.id}
                     variants={{
@@ -191,12 +350,10 @@ export default function ProductsPage() {
                       <div className="bg-gray-800 bg-opacity-50 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl backdrop-blur-md">
                         <div className="relative h-64">
                           <Image
-                            src={product.image}
+                            src={product.image || '/placeholder.svg'}
                             alt={product.name}
                             fill
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            placeholder="blur"
-                            blurDataURL={product.placeholder}
                             style={{ objectFit: 'cover' }}
                             className="transition-all duration-300 group-hover:opacity-75"
                           />
@@ -208,14 +365,16 @@ export default function ProductsPage() {
                         </div>
                         <div className="p-6">
                           <h3 className="text-xl font-semibold mb-2 group-hover:text-current transition-colors duration-300" style={{ color: themes[theme].primary }}>{product.name}</h3>
-                          <p className="text-gray-400 mb-2">{product.category}</p>
-                          <div className="flex items-center mb-2">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400'}`} />
-                            ))}
-                            <span className="ml-2 text-gray-400">({product.rating})</span>
-                          </div>
                           <p className="font-bold text-lg" style={{ color: themes[theme].secondary }}>₫{product.price.toLocaleString()}</p>
+                          {product.tags && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {product.tags.map((tag, index) => (
+                                <span key={index} className="px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           <Button
                             className={`w-full mt-4 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 bg-gray-700 hover:text-black hover:bg-opacity-90 hover:bg-[${themes[theme].primary}] hover:shadow-[0_0_20px_${themes[theme].primary},_0_0_40px_${themes[theme].primary}]`}
                           >
@@ -228,6 +387,33 @@ export default function ProductsPage() {
                 ))}
               </motion.div>
             </AnimatePresence>
+            {metadata && (
+              <div className="mt-8 flex justify-center space-x-2">
+                <Button
+                  onClick={() => {
+                    const newPage = Math.max(currentPage - 1, metadata.first_page);
+                    setCurrentPage(newPage);
+                    updateQueryParams({ page: newPage.toString() });
+                  }}
+                  disabled={currentPage === metadata.first_page}
+                >
+                  Previous
+                </Button>
+                <span className="py-2 px-4 bg-gray-700 rounded-md">
+                  Page {currentPage} of {metadata.last_page}
+                </span>
+                <Button
+                  onClick={() => {
+                    const newPage = Math.min(currentPage + 1, metadata.last_page);
+                    setCurrentPage(newPage);
+                    updateQueryParams({ page: newPage.toString() });
+                  }}
+                  disabled={currentPage === metadata.last_page}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </main>
