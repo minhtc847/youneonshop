@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 //1920x1080
 const featuredProducts = [
-  { id: 1, name: 'Cosmic Dreams', description: 'Illuminate your space', image: '/neon-1.jpg', cta: 'Shop Now' },
+  { id: 1, name: 'Cosmic Dreams', description: 'Illuminate your space', image: '/neon-2.jpg', cta: 'Shop Now' },
   { id: 2, name: 'Urban Pulse', description: "Energize your home", image: '/neon-2.jpg', cta: 'Explore' },
   { id: 3, name: 'Neon Jungle', description: 'Transform your room', image: '/neon-3.jpg', cta: 'Discover' },
 ]

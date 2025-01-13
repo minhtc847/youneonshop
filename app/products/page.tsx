@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingCart, Filter, SortAsc, SortDesc, X, Search } from 'lucide-react'
+import { ShoppingCart, Filter, SortAsc, SortDesc, X, Search, Star } from 'lucide-react'
 import { Product, ProductsResponse } from '@/types/product'
 import { listProduct, getCategories, getTags } from '@/service/productServices'
-import ProductTags from '@/components/product-tags'
+
 import {
   Select,
   SelectContent,
@@ -47,7 +47,7 @@ export default function ProductsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [theme, setTheme] = useState('blue')
+  const [theme, setTheme] = useState<keyof typeof themes>('blue')
   const [error, setError] = useState<string | null>(null)
 
   const updateQueryParams = useCallback((params: Record<string, string | string[] | null>) => {
@@ -220,7 +220,7 @@ export default function ProductsPage() {
                 key={color}
                 className={`w-10 h-10 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform transform hover:scale-110 ${theme === color ? 'ring-2 ring-offset-2 scale-110' : ''}`}
                 style={{ backgroundColor: themes[color].primary }}
-                onClick={() => setTheme(color as keyof typeof themes)}
+                onClick={() => setTheme(color)}
                 aria-label={`Switch to ${color} theme`}
               />
             ))}
@@ -330,7 +330,6 @@ export default function ProductsPage() {
                 <span className="block sm:inline">{error}</span>
               </div>
             )}
-            {/* <ProductTags selectedTags={selectedTags} onTagSelect={handleTagChange} /> */}
             <AnimatePresence>
               <motion.div
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
@@ -386,6 +385,18 @@ export default function ProductsPage() {
                         <div className="p-6 flex flex-col flex-grow">
                           <h3 className="text-xl font-semibold mb-2 group-hover:text-current transition-colors duration-300" style={{ color: themes[theme].primary }}>{product.name}</h3>
                           <p className="font-bold text-lg mb-3" style={{ color: themes[theme].secondary }}>₫{product.price.toLocaleString()}</p>
+                          <div className="flex items-center mb-3">
+                            {Array.from({ length: 5 }).map((_, index) => (
+                              <Star
+                                key={index}
+                                className={`h-4 w-4 ${index < Math.floor(product.rating || 0)
+                                  ? 'text-yellow-400 fill-current'
+                                  : 'text-gray-400'
+                                  }`}
+                              />
+                            ))}
+                            <span className="ml-2 text-sm text-gray-400">({product.rating || 0})</span>
+                          </div>
                           <div className="mb-4 flex-grow">
                             <div className="h-20 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                               {product.tags && product.tags.map((tag, index) => (

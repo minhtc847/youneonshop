@@ -10,16 +10,16 @@ import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
 
 // Mock data for cart items
 const initialCartItems = [
-  { id: 1, name: 'Blue Wave', price: 129.99, quantity: 1, image: '/neon-1.jpg' },
-  { id: 2, name: 'Pink Flamingo', price: 129.99, quantity: 1, image: '/neon-1.jpg' },
-  { id: 3, name: 'Yellow Bolt', price: 89.99, quantity: 1, image: '/neon-1.jpg' },
+  { id: 1, name: 'Blue Wave', price: 129.99, quantity: 1, image: '/neon-2.jpg' },
+  { id: 2, name: 'Pink Flamingo', price: 129.99, quantity: 1, image: '/neon-2.jpg' },
+  { id: 3, name: 'Yellow Bolt', price: 89.99, quantity: 1, image: '/neon-2.jpg' },
 ]
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState(initialCartItems)
 
   const updateQuantity = (id: number, newQuantity: number) => {
-    setCartItems(cartItems.map(item => 
+    setCartItems(cartItems.map(item =>
       item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
     ))
   }
@@ -34,7 +34,7 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <motion.h1 
+      <motion.h1
         className="text-5xl font-bold mb-12 text-center text-neon-blue"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -44,7 +44,7 @@ export default function CartPage() {
       </motion.h1>
 
       {cartItems.length === 0 ? (
-        <motion.div 
+        <motion.div
           className="text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -58,7 +58,7 @@ export default function CartPage() {
         </motion.div>
       ) : (
         <div className="grid md:grid-cols-3 gap-8">
-          <motion.div 
+          <motion.div
             className="md:col-span-2 space-y-6"
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -74,22 +74,22 @@ export default function CartPage() {
                   <p className="text-neon-yellow">₫{item.price.toLocaleString()}</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
                     className="text-neon-pink hover:text-neon-pink/80"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     value={item.quantity}
                     onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
                     className="w-16 text-center bg-gray-700 text-white border-gray-600"
                   />
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     className="text-neon-green hover:text-neon-green/80"
@@ -97,8 +97,8 @@ export default function CartPage() {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   onClick={() => removeItem(item.id)}
                   className="text-neon-pink hover:text-neon-pink/80"
@@ -109,7 +109,7 @@ export default function CartPage() {
             ))}
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="md:col-span-1"
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}

@@ -85,7 +85,7 @@ export default function ProductPage() {
         >
           <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-900">
             <Image
-              src={product.image || '/neon-1.jpg'}
+              src={product.image || '/neon-2.jpg'}
               alt={product.name}
               fill
               className="object-cover transition-all duration-300 hover:scale-105"
