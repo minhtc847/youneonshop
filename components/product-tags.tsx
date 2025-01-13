@@ -1,7 +1,13 @@
 import React from 'react';
 import { getTags } from '@/service/productServices';
+import { Button } from "@/components/ui/button"
 
-export default function ProductTags() {
+interface ProductTagsProps {
+  selectedTags: string[];
+  onTagSelect: (tag: string) => void;
+}
+
+export default function ProductTags({ selectedTags, onTagSelect }: ProductTagsProps) {
   const [tags, setTags] = React.useState<string[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
@@ -25,13 +31,18 @@ export default function ProductTags() {
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 mb-4">
       {tags.map((tag) => (
-        <span key={tag} className="px-2 py-1 bg-gray-700 text-white rounded-full text-sm">
+        <Button
+          key={tag}
+          variant={selectedTags.includes(tag) ? "secondary" : "outline"}
+          size="sm"
+          onClick={() => onTagSelect(tag)}
+          className="text-sm"
+        >
           {tag}
-        </span>
+        </Button>
       ))}
     </div>
   );
 }
-

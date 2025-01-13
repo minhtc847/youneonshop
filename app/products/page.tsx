@@ -10,10 +10,19 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingCart, Filter, SortAsc, SortDesc } from 'lucide-react'
+import { ShoppingCart, Filter, SortAsc, SortDesc, X, Search } from 'lucide-react'
 import { Product, ProductsResponse } from '@/types/product'
 import { listProduct, getCategories, getTags } from '@/service/productServices'
 import ProductTags from '@/components/product-tags'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from 'react-toastify'
 
 const themes = {
   blue: { primary: '#00ffff', secondary: '#0080ff' },
@@ -48,7 +57,7 @@ export default function ProductsPage() {
       if (value === null) {
         newSearchParams.delete(key);
       } else if (Array.isArray(value)) {
-        newSearchParams.set(key, value.join(',')); // Chuyển mảng thành chuỗi phân tách bằng dấu phẩy
+        newSearchParams.set(key, value.join(','));
       } else {
         newSearchParams.set(key, value);
       }
@@ -57,47 +66,33 @@ export default function ProductsPage() {
     router.push(`/products?${newSearchParams.toString()}`);
   }, [router, searchParams]);
 
-
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const params: Record<string, string | string[]> = {
-        category: selectedCategory || '',
-        tags: selectedTags.join(','), // Chuyển mảng tags thành chuỗi phân tách bằng dấu phẩy
-        price_from: priceRange[0].toString(),
-        price_to: priceRange[1].toString(),
-        page: currentPage.toString(),
-        page_size: '20',
+      const params = {
+        category: selectedCategory || undefined,
+        tags: selectedTags,
+        name: searchTerm || undefined,
+        price_from: priceRange[0],
+        price_to: priceRange[1],
+        page: currentPage,
+        page_size: 20,
         sort: sortOrder === 'asc' ? 'price' : '-price',
       };
 
-      if (searchTerm) {
-        params.name = searchTerm;
-      }
-
-      const queryString = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          value.forEach(v => queryString.append(key, v));
-        } else if (value) {
-          queryString.append(key, value);
-        }
-      });
-
-      const response = await fetch(`http://localhost:4000/products?${queryString.toString()}`);
-      const data = await response.json();
-
+      const data = await listProduct(params);
       setProducts(data.products);
       setMetadata(data.metadata);
     } catch (error) {
       console.error('Error fetching products:', error);
-      setError('Failed to fetch products.');
+      setError('Failed to fetch products. Please try again later.');
+      toast.error('Failed to fetch products. Please try again later.');
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory, selectedTags, priceRange, currentPage, sortOrder, searchTerm]);
+  }, [selectedCategory, selectedTags, searchTerm, priceRange, currentPage, sortOrder]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -138,6 +133,7 @@ export default function ProductsPage() {
         }
       } catch (error) {
         console.error('Error fetching initial data:', error)
+        toast.error('Error loading initial data. Please refresh the page.');
       }
     }
 
@@ -172,8 +168,10 @@ export default function ProductsPage() {
     updateQueryParams({ sort: newSortOrder })
   }
 
-  const handleSearch = () => {
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
     updateQueryParams({ search: searchTerm || null })
+    fetchProducts();
   }
 
   const handlePriceRangeChange = (newPriceRange: number[]) => {
@@ -184,6 +182,11 @@ export default function ProductsPage() {
     });
   };
 
+  const handleAddToCart = (productId: string) => {
+    // This is a placeholder for the actual cart functionality
+    console.log(`Adding product ${productId} to cart`);
+    toast.success('Product added to cart!');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
@@ -217,7 +220,7 @@ export default function ProductsPage() {
                 key={color}
                 className={`w-10 h-10 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform transform hover:scale-110 ${theme === color ? 'ring-2 ring-offset-2 scale-110' : ''}`}
                 style={{ backgroundColor: themes[color].primary }}
-                onClick={() => setTheme(color)}
+                onClick={() => setTheme(color as keyof typeof themes)}
                 aria-label={`Switch to ${color} theme`}
               />
             ))}
@@ -237,7 +240,7 @@ export default function ProductsPage() {
           >
             <div>
               <Label htmlFor="search" className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Search</Label>
-              <div className="flex">
+              <form onSubmit={handleSearch} className="flex">
                 <Input
                   id="search"
                   type="text"
@@ -247,10 +250,10 @@ export default function ProductsPage() {
                   className="bg-gray-700 text-white border-gray-600 focus:border-current"
                   style={{ '--tw-ring-color': themes[theme].primary } as React.CSSProperties}
                 />
-                <Button onClick={handleSearch} className="ml-2 bg-gray-700 hover:bg-gray-600 text-white">
-                  Search
+                <Button type="submit" className="ml-2 bg-gray-700 hover:bg-gray-600 text-white">
+                  <Search className="h-4 w-4" />
                 </Button>
-              </div>
+              </form>
             </div>
             <div>
               <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Categories</Label>
@@ -267,16 +270,18 @@ export default function ProductsPage() {
             </div>
             <div>
               <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Tags</Label>
-              {tags.map(tag => (
-                <div key={tag} className="flex items-center space-x-2 mb-2">
-                  <Checkbox
-                    id={tag}
-                    checked={selectedTags.includes(tag)}
-                    onCheckedChange={() => handleTagChange(tag)}
-                  />
-                  <Label htmlFor={tag} className="text-white">{tag}</Label>
-                </div>
-              ))}
+              <div className="max-h-40 overflow-y-auto pr-2">
+                {tags.map(tag => (
+                  <div key={tag} className="flex items-center space-x-2 mb-2">
+                    <Checkbox
+                      id={tag}
+                      checked={selectedTags.includes(tag)}
+                      onCheckedChange={() => handleTagChange(tag)}
+                    />
+                    <Label htmlFor={tag} className="text-white">{tag}</Label>
+                  </div>
+                ))}
+              </div>
             </div>
             <div>
               <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Price Range</Label>
@@ -300,16 +305,24 @@ export default function ProductsPage() {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="md:hidden bg-gray-700 hover:bg-gray-600 text-white"
               >
-                <Filter className="mr-2 h-4 w-4" />
+                {isFilterOpen ? <X className="mr-2 h-4 w-4" /> : <Filter className="mr-2 h-4 w-4" />}
                 {isFilterOpen ? 'Hide Filters' : 'Show Filters'}
               </Button>
-              <Button
-                onClick={toggleSortOrder}
-                className="bg-gray-700 hover:bg-gray-600 text-white"
+              <Select
+                value={sortOrder}
+                onValueChange={(value: 'asc' | 'desc') => {
+                  setSortOrder(value);
+                  updateQueryParams({ sort: value });
+                }}
               >
-                {sortOrder === 'asc' ? <SortAsc className="mr-2 h-4 w-4" /> : <SortDesc className="mr-2 h-4 w-4" />}
-                Sort by Price
-              </Button>
+                <SelectTrigger className="w-[180px] bg-gray-700 text-white">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Price: Low to High</SelectItem>
+                  <SelectItem value="desc">Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -317,7 +330,7 @@ export default function ProductsPage() {
                 <span className="block sm:inline">{error}</span>
               </div>
             )}
-            <ProductTags />
+            {/* <ProductTags selectedTags={selectedTags} onTagSelect={handleTagChange} /> */}
             <AnimatePresence>
               <motion.div
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
@@ -327,88 +340,106 @@ export default function ProductsPage() {
                   visible: { transition: { staggerChildren: 0.1 } }
                 }}
               >
-                {isLoading && (
-                  <div className="col-span-full flex justify-center items-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-neon-blue"></div>
-                  </div>
-                )}
-                {!isLoading && products.length === 0 && (
+                {isLoading ? (
+                  Array.from({ length: 8 }).map((_, index) => (
+                    <div key={index} className="bg-gray-800 bg-opacity-50 rounded-lg overflow-hidden shadow-lg backdrop-blur-md">
+                      <Skeleton className="h-48 w-full" />
+                      <div className="p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-4 w-1/2 mb-4" />
+                        <Skeleton className="h-8 w-full" />
+                      </div>
+                    </div>
+                  ))
+                ) : products.length === 0 ? (
                   <div className="col-span-full text-center text-gray-400">
-                    No products found. Try adjusting your filters.
+                    No products found. Try adjusting your filters or search terms.
                   </div>
-                )}
-                {products.map((product) => (
-                  <motion.div
-                    key={product.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 20 },
-                      visible: { opacity: 1, y: 0 }
-                    }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <Link href={`/products/${product.id}`} className="group">
-                      <div className="bg-gray-800 bg-opacity-50 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl backdrop-blur-md">
-                        <div className="relative h-64">
-                          <Image
-                            src={product.image || '/placeholder.svg'}
-                            alt={product.name}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            style={{ objectFit: 'cover' }}
-                            className="transition-all duration-300 group-hover:opacity-75"
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                            <span className="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-all duration-300">
-                              View Details
-                            </span>
+                ) : (
+                  products.map((product) => (
+                    <motion.div
+                      key={product.id}
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        visible: { opacity: 1, y: 0 }
+                      }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <div className="bg-gray-800 bg-opacity-50 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl backdrop-blur-md flex flex-col h-full">
+                        <Link href={`/products/${product.id}`} className="group">
+                          <div className="relative aspect-square">
+                            <Image
+                              src={product.image || '/neon-1.jpg'}
+                              alt={product.name}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              style={{ objectFit: 'cover' }}
+                              className="transition-all duration-300 group-hover:opacity-75"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                              <span className="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                View Details
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="p-6">
+                        </Link>
+                        <div className="p-6 flex flex-col flex-grow">
                           <h3 className="text-xl font-semibold mb-2 group-hover:text-current transition-colors duration-300" style={{ color: themes[theme].primary }}>{product.name}</h3>
-                          <p className="font-bold text-lg" style={{ color: themes[theme].secondary }}>₫{product.price.toLocaleString()}</p>
-                          {product.tags && (
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              {product.tags.map((tag, index) => (
-                                <span key={index} className="px-2 py-1 bg-gray-700 text-white rounded-full text-xs">
+                          <p className="font-bold text-lg mb-3" style={{ color: themes[theme].secondary }}>₫{product.price.toLocaleString()}</p>
+                          <div className="mb-4 flex-grow">
+                            <div className="h-20 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                              {product.tags && product.tags.map((tag, index) => (
+                                <span key={index} className="inline-block px-2 py-1 bg-gray-700 text-white text-xs rounded-full mr-2 mb-2 transition-all duration-300 hover:bg-gray-600">
                                   {tag}
                                 </span>
                               ))}
                             </div>
-                          )}
+                          </div>
                           <Button
-                            className={`w-full mt-4 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 bg-gray-700 hover:text-black hover:bg-opacity-90 hover:bg-[${themes[theme].primary}] hover:shadow-[0_0_20px_${themes[theme].primary},_0_0_40px_${themes[theme].primary}]`}
+                            className="w-full mt-2 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 bg-gray-700 hover:text-black hover:bg-opacity-90"
+                            style={{
+                              '--hover-bg': themes[theme].primary,
+                              '--hover-shadow': themes[theme].primary,
+                            } as React.CSSProperties}
+                            onClick={() => handleAddToCart(product.id)}
                           >
                             <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
                           </Button>
                         </div>
                       </div>
-                    </Link>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))
+                )}
               </motion.div>
             </AnimatePresence>
             {metadata && (
               <div className="mt-8 flex justify-center space-x-2">
                 <Button
                   onClick={() => {
-                    const newPage = Math.max(currentPage - 1, metadata.first_page);
-                    setCurrentPage(newPage);
-                    updateQueryParams({ page: newPage.toString() });
+                    if (metadata) {
+                      const newPage = Math.max(currentPage - 1, metadata.first_page);
+                      setCurrentPage(newPage);
+                      updateQueryParams({ page: newPage.toString() });
+                    }
                   }}
-                  disabled={currentPage === metadata.first_page}
+                  disabled={!metadata || currentPage === metadata.first_page}
+                  className="bg-gray-700 hover:bg-gray-600 text-white"
                 >
                   Previous
                 </Button>
-                <span className="py-2 px-4 bg-gray-700 rounded-md">
-                  Page {currentPage} of {metadata.last_page}
+                <span className="py-2 px-4 bg-gray-700 rounded-md text-white">
+                  Page {currentPage} of {metadata?.last_page || 1}
                 </span>
                 <Button
                   onClick={() => {
-                    const newPage = Math.min(currentPage + 1, metadata.last_page);
-                    setCurrentPage(newPage);
-                    updateQueryParams({ page: newPage.toString() });
+                    if (metadata) {
+                      const newPage = Math.min(currentPage + 1, metadata.last_page);
+                      setCurrentPage(newPage);
+                      updateQueryParams({ page: newPage.toString() });
+                    }
                   }}
-                  disabled={currentPage === metadata.last_page}
+                  disabled={!metadata || currentPage === metadata.last_page}
+                  className="bg-gray-700 hover:bg-gray-600 text-white"
                 >
                   Next
                 </Button>
