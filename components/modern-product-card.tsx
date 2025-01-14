@@ -1,0 +1,89 @@
+import React from 'react'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { ShoppingCart } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+
+interface ProductCardProps {
+  id: string
+  name: string
+  price: number | null
+  image: string
+  description: string
+  tags: string[]
+}
+
+const ModernProductCard: React.FC<ProductCardProps> = ({
+  id,
+  name,
+  price,
+  image,
+  description,
+  tags
+}) => {
+  const router = useRouter()
+
+  const handleCardClick = () => {
+    router.push(`/products/${id}`)
+  }
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card click when clicking the button
+    // Add to cart logic here
+    console.log('Added to cart:', id)
+  }
+
+  return (
+    <motion.div
+      className="bg-gray-900 rounded-lg overflow-hidden shadow-lg hover:shadow-neon-blue transition-all duration-300 flex flex-col h-full max-w-sm cursor-pointer"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      onClick={handleCardClick}
+    >
+      <div className="relative aspect-square overflow-hidden">
+        <Image
+          src={image || '/placeholder.svg'}
+          alt={name}
+          layout="fill"
+          objectFit="cover"
+          className="transition-all duration-300 transform hover:scale-110"
+        />
+      </div>
+      <div className="p-4 flex flex-col flex-grow">
+        <h3 className="text-xl font-semibold mb-2 text-neon-blue truncate">{name}</h3>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {tags.slice(0, 3).map((tag, index) => (
+            <span
+              key={index}
+              className="px-2 py-1 bg-gray-800 text-neon-green text-xs rounded-full"
+            >
+              {tag}
+            </span>
+          ))}
+          {tags.length > 3 && (
+            <span className="px-2 py-1 bg-gray-800 text-neon-blue text-xs rounded-full">
+              +{tags.length - 3}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-2xl font-bold text-neon-pink animate-neon-pulse">
+            {price !== null && price !== undefined ? `${price.toLocaleString('vi-VN')}₫` : 'Price not available'}
+          </span>
+        </div>
+        <Button
+          className="w-full bg-neon-blue hover:bg-neon-blue/80 text-black font-semibold py-2 px-4 rounded-full transition-all duration-300 hover:shadow-neon-glow flex items-center justify-center"
+          onClick={handleAddToCart}
+        >
+          <ShoppingCart className="mr-2 h-4 w-4" />
+          Thêm vào giỏ
+        </Button>
+      </div>
+    </motion.div>
+  )
+}
+
+export default ModernProductCard
+

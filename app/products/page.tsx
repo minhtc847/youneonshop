@@ -1,19 +1,17 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
-import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingCart, Filter, SortAsc, SortDesc, X, Search, Star } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Filter, Search } from 'lucide-react'
 import { Product, ProductsResponse } from '@/types/product'
 import { listProduct, getCategories, getTags } from '@/service/productServices'
-
+import ProductTags from '@/components/product-tags'
 import {
   Select,
   SelectContent,
@@ -23,11 +21,20 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from 'react-toastify'
+import ModernProductCard from '@/components/modern-product-card'
 
 const themes = {
   blue: { primary: '#00ffff', secondary: '#0080ff' },
   pink: { primary: '#ff00ff', secondary: '#ff0080' },
   yellow: { primary: '#ffff00', secondary: '#ffaa00' },
+}
+
+interface FilterState {
+  category: string;
+  tags: string[];
+  priceRange: number[];
+  searchTerm: string;
+  sortOrder: 'asc' | 'desc';
 }
 
 export default function ProductsPage() {
@@ -40,11 +47,21 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<string[]>([])
   const [tags, setTags] = useState<string[]>([])
 
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState([0, 10000000])
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [currentFilters, setCurrentFilters] = useState<FilterState>({
+    category: '',
+    tags: [],
+    priceRange: [0, 10000000],
+    searchTerm: '',
+    sortOrder: 'asc'
+  })
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
+    category: '',
+    tags: [],
+    priceRange: [0, 10000000],
+    searchTerm: '',
+    sortOrder: 'asc'
+  })
+
   const [currentPage, setCurrentPage] = useState(1)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [theme, setTheme] = useState<keyof typeof themes>('blue')
@@ -72,14 +89,14 @@ export default function ProductsPage() {
 
     try {
       const params = {
-        category: selectedCategory || undefined,
-        tags: selectedTags,
-        name: searchTerm || undefined,
-        price_from: priceRange[0],
-        price_to: priceRange[1],
+        category: appliedFilters.category || undefined,
+        tags: appliedFilters.tags,
+        name: appliedFilters.searchTerm || undefined,
+        price_from: appliedFilters.priceRange[0],
+        price_to: appliedFilters.priceRange[1],
         page: currentPage,
         page_size: 20,
-        sort: sortOrder === 'asc' ? 'price' : '-price',
+        sort: appliedFilters.sortOrder === 'asc' ? 'price' : '-price',
       };
 
       const data = await listProduct(params);
@@ -92,7 +109,7 @@ export default function ProductsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory, selectedTags, searchTerm, priceRange, currentPage, sortOrder]);
+  }, [appliedFilters, currentPage]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -102,34 +119,29 @@ export default function ProductsPage() {
         setTags(tagsData)
 
         const categoryParam = searchParams.get('category')
-        if (categoryParam) {
-          setSelectedCategory(categoryParam)
-        }
-
         const tagParam = searchParams.get('tags')
-        if (tagParam) {
-          setSelectedTags(tagParam.split(','))
-        }
-
         const searchParam = searchParams.get('search')
-        if (searchParam) {
-          setSearchTerm(searchParam)
-        }
-
         const sortParam = searchParams.get('sort')
-        if (sortParam === 'asc' || sortParam === 'desc') {
-          setSortOrder(sortParam)
+        const pageParam = searchParams.get('page')
+        const minPriceParam = searchParams.get('price_from')
+        const maxPriceParam = searchParams.get('price_to')
+
+        const initialFilters: FilterState = {
+          category: categoryParam || '',
+          tags: tagParam ? tagParam.split(',') : [],
+          searchTerm: searchParam || '',
+          sortOrder: (sortParam === 'asc' || sortParam === 'desc') ? sortParam : 'asc',
+          priceRange: [
+            minPriceParam ? parseInt(minPriceParam, 10) : 0,
+            maxPriceParam ? parseInt(maxPriceParam, 10) : 10000000
+          ]
         }
 
-        const pageParam = searchParams.get('page')
+        setCurrentFilters(initialFilters)
+        setAppliedFilters(initialFilters)
+
         if (pageParam) {
           setCurrentPage(parseInt(pageParam, 10))
-        }
-
-        const minPriceParam = searchParams.get('price_from');
-        const maxPriceParam = searchParams.get('price_to');
-        if (minPriceParam && maxPriceParam) {
-          setPriceRange([parseInt(minPriceParam, 10), parseInt(maxPriceParam, 10)]);
         }
       } catch (error) {
         console.error('Error fetching initial data:', error)
@@ -145,47 +157,55 @@ export default function ProductsPage() {
   }, [fetchProducts])
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category === selectedCategory ? '' : category)
-    updateQueryParams({ category: category === selectedCategory ? null : category })
-  }
+    setCurrentFilters(prev => ({
+      ...prev,
+      category: category === prev.category ? '' : category
+    }));
+  };
 
   const handleTagChange = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag)
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    )
-  }
-
-  useEffect(() => {
-    updateQueryParams({ tags: selectedTags.length > 0 ? selectedTags : null })
-    fetchProducts()
-  }, [selectedTags, updateQueryParams, fetchProducts])
-
-  const toggleSortOrder = () => {
-    const newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
-    setSortOrder(newSortOrder)
-    updateQueryParams({ sort: newSortOrder })
+    setCurrentFilters(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter(t => t !== tag)
+        : [...prev.tags, tag]
+    }));
   }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    updateQueryParams({ search: searchTerm || null })
-    fetchProducts();
-  }
-
-  const handlePriceRangeChange = (newPriceRange: number[]) => {
-    setPriceRange(newPriceRange);
-    updateQueryParams({
-      price_from: newPriceRange[0].toString(),
-      price_to: newPriceRange[1].toString(),
-    });
+    setCurrentFilters(prev => ({
+      ...prev,
+      searchTerm: prev.searchTerm
+    }));
   };
 
-  const handleAddToCart = (productId: string) => {
-    // This is a placeholder for the actual cart functionality
-    console.log(`Adding product ${productId} to cart`);
-    toast.success('Product added to cart!');
+  const handlePriceRangeChange = (newPriceRange: number[]) => {
+    setCurrentFilters(prev => ({
+      ...prev,
+      priceRange: newPriceRange
+    }));
+  };
+
+  const handleSortChange = (value: 'asc' | 'desc') => {
+    setCurrentFilters(prev => ({
+      ...prev,
+      sortOrder: value
+    }));
+  };
+
+  const applyFilters = () => {
+    setAppliedFilters(currentFilters);
+    setCurrentPage(1);
+    updateQueryParams({
+      category: currentFilters.category || null,
+      tags: currentFilters.tags.length > 0 ? currentFilters.tags : null,
+      search: currentFilters.searchTerm || null,
+      sort: currentFilters.sortOrder,
+      price_from: currentFilters.priceRange[0].toString(),
+      price_to: currentFilters.priceRange[1].toString(),
+      page: '1'
+    });
   };
 
   return (
@@ -209,22 +229,6 @@ export default function ProductsPage() {
           >
             Discover our collection of stunning neon lights to transform your environment
           </motion.p>
-          <motion.div
-            className="flex justify-center mb-8 space-x-4"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            {(Object.keys(themes) as Array<keyof typeof themes>).map((color) => (
-              <button
-                key={color}
-                className={`w-10 h-10 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform transform hover:scale-110 ${theme === color ? 'ring-2 ring-offset-2 scale-110' : ''}`}
-                style={{ backgroundColor: themes[color].primary }}
-                onClick={() => setTheme(color)}
-                aria-label={`Switch to ${color} theme`}
-              />
-            ))}
-          </motion.div>
         </div>
         <div className="absolute inset-0 opacity-50">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 animate-gradient-x"></div>
@@ -245,8 +249,8 @@ export default function ProductsPage() {
                   id="search"
                   type="text"
                   placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={currentFilters.searchTerm}
+                  onChange={(e) => setCurrentFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
                   className="bg-gray-700 text-white border-gray-600 focus:border-current"
                   style={{ '--tw-ring-color': themes[theme].primary } as React.CSSProperties}
                 />
@@ -261,7 +265,7 @@ export default function ProductsPage() {
                 <div key={category} className="flex items-center space-x-2 mb-2">
                   <Checkbox
                     id={category}
-                    checked={selectedCategory === category}
+                    checked={currentFilters.category === category}
                     onCheckedChange={() => handleCategoryChange(category)}
                   />
                   <Label htmlFor={category} className="text-white">{category}</Label>
@@ -275,7 +279,7 @@ export default function ProductsPage() {
                   <div key={tag} className="flex items-center space-x-2 mb-2">
                     <Checkbox
                       id={tag}
-                      checked={selectedTags.includes(tag)}
+                      checked={currentFilters.tags.includes(tag)}
                       onCheckedChange={() => handleTagChange(tag)}
                     />
                     <Label htmlFor={tag} className="text-white">{tag}</Label>
@@ -289,15 +293,21 @@ export default function ProductsPage() {
                 min={0}
                 max={10000000}
                 step={100000}
-                value={priceRange}
+                value={currentFilters.priceRange}
                 onValueChange={handlePriceRangeChange}
                 className="my-4"
               />
               <div className="flex justify-between text-white">
-                <span>₫{priceRange[0].toLocaleString()}</span>
-                <span>₫{priceRange[1].toLocaleString()}</span>
+                <span>₫{currentFilters.priceRange[0].toLocaleString()}</span>
+                <span>₫{currentFilters.priceRange[1].toLocaleString()}</span>
               </div>
             </div>
+            <Button
+              onClick={applyFilters}
+              className="w-full bg-neon-blue hover:bg-neon-blue/80 text-black font-bold"
+            >
+              Apply Filters
+            </Button>
           </motion.div>
           <div className="md:w-3/4">
             <div className="flex justify-between items-center mb-6">
@@ -305,15 +315,12 @@ export default function ProductsPage() {
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="md:hidden bg-gray-700 hover:bg-gray-600 text-white"
               >
-                {isFilterOpen ? <X className="mr-2 h-4 w-4" /> : <Filter className="mr-2 h-4 w-4" />}
+                {isFilterOpen ? <Filter className="mr-2 h-4 w-4" /> : <Filter className="mr-2 h-4 w-4" />}
                 {isFilterOpen ? 'Hide Filters' : 'Show Filters'}
               </Button>
               <Select
-                value={sortOrder}
-                onValueChange={(value: 'asc' | 'desc') => {
-                  setSortOrder(value);
-                  updateQueryParams({ sort: value });
-                }}
+                value={currentFilters.sortOrder}
+                onValueChange={(value: 'asc' | 'desc') => handleSortChange(value)}
               >
                 <SelectTrigger className="w-[180px] bg-gray-700 text-white">
                   <SelectValue placeholder="Sort by" />
@@ -330,99 +337,37 @@ export default function ProductsPage() {
                 <span className="block sm:inline">{error}</span>
               </div>
             )}
-            <AnimatePresence>
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  visible: { transition: { staggerChildren: 0.1 } }
-                }}
-              >
-                {isLoading ? (
-                  Array.from({ length: 8 }).map((_, index) => (
-                    <div key={index} className="bg-gray-800 bg-opacity-50 rounded-lg overflow-hidden shadow-lg backdrop-blur-md">
-                      <Skeleton className="h-48 w-full" />
-                      <div className="p-4">
-                        <Skeleton className="h-4 w-3/4 mb-2" />
-                        <Skeleton className="h-4 w-1/2 mb-4" />
-                        <Skeleton className="h-8 w-full" />
-                      </div>
-                    </div>
-                  ))
-                ) : products.length === 0 ? (
-                  <div className="col-span-full text-center text-gray-400">
-                    No products found. Try adjusting your filters or search terms.
-                  </div>
-                ) : (
-                  products.map((product) => (
-                    <motion.div
-                      key={product.id}
-                      variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0 }
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <div className="bg-gray-800 bg-opacity-50 rounded-lg overflow-hidden transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl backdrop-blur-md flex flex-col h-full">
-                        <Link href={`/products/${product.id}`} className="group">
-                          <div className="relative aspect-square">
-                            <Image
-                              src={product.image || '/neon-1.jpg'}
-                              alt={product.name}
-                              fill
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                              style={{ objectFit: 'cover' }}
-                              className="transition-all duration-300 group-hover:opacity-75"
-                            />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                              <span className="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                View Details
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                        <div className="p-6 flex flex-col flex-grow">
-                          <h3 className="text-xl font-semibold mb-2 group-hover:text-current transition-colors duration-300" style={{ color: themes[theme].primary }}>{product.name}</h3>
-                          <p className="font-bold text-lg mb-3" style={{ color: themes[theme].secondary }}>₫{product.price.toLocaleString()}</p>
-                          <div className="flex items-center mb-3">
-                            {Array.from({ length: 5 }).map((_, index) => (
-                              <Star
-                                key={index}
-                                className={`h-4 w-4 ${index < Math.floor(product.rating || 0)
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-400'
-                                  }`}
-                              />
-                            ))}
-                            <span className="ml-2 text-sm text-gray-400">({product.rating || 0})</span>
-                          </div>
-                          <div className="mb-4 flex-grow">
-                            <div className="h-20 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                              {product.tags && product.tags.map((tag, index) => (
-                                <span key={index} className="inline-block px-2 py-1 bg-gray-700 text-white text-xs rounded-full mr-2 mb-2 transition-all duration-300 hover:bg-gray-600">
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                          <Button
-                            className="w-full mt-2 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 bg-gray-700 hover:text-black hover:bg-opacity-90"
-                            style={{
-                              '--hover-bg': themes[theme].primary,
-                              '--hover-shadow': themes[theme].primary,
-                            } as React.CSSProperties}
-                            onClick={() => handleAddToCart(product.id)}
-                          >
-                            <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
-                          </Button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-              </motion.div>
-            </AnimatePresence>
+            {/* <ProductTags selectedTags={appliedFilters.tags} onTagSelect={handleTagChange} /> */}
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                visible: { transition: { staggerChildren: 0.1 } }
+              }}
+            >
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, index) => (
+                  <Skeleton key={index} className="h-[500px] w-full rounded-lg" />
+                ))
+              ) : products.length === 0 ? (
+                <div className="col-span-full text-center text-gray-400">
+                  No products found. Try adjusting your filters or search terms.
+                </div>
+              ) : (
+                products.map((product) => (
+                  <ModernProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    image={product.image || '/neon-1.jpg'}
+                    description={product.description}
+                    tags={product.tags || []}
+                  />
+                ))
+              )}
+            </motion.div>
             {metadata && (
               <div className="mt-8 flex justify-center space-x-2">
                 <Button
