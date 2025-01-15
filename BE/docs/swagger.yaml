@@ -16,6 +16,13 @@ definitions:
       telephone:
         type: string
     type: object
+  main.CartRequest:
+    properties:
+      product_id:
+        type: string
+      quantity:
+        type: integer
+    type: object
   main.LoginRequest:
     properties:
       email:
@@ -40,6 +47,89 @@ definitions:
 info:
   contact: {}
 paths:
+  /carts:
+    get:
+      consumes:
+      - application/json
+      description: Get cart items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      summary: Get cart items
+      tags:
+      - carts
+    post:
+      consumes:
+      - application/json
+      description: Insert a cart item
+      parameters:
+      - description: Cart request
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/main.CartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      summary: Insert a cart item
+      tags:
+      - carts
+  /carts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a cart item
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      summary: Remove a cart item
+      tags:
+      - carts
+    put:
+      consumes:
+      - application/json
+      description: Update a cart item
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Quantity
+        in: body
+        name: quantity
+        required: true
+        schema:
+          $ref: '#/definitions/main.CartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      summary: Update a cart item
+      tags:
+      - carts
   /categories:
     get:
       consumes:
