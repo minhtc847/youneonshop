@@ -41,6 +41,13 @@ type Models struct {
 		GetAll() ([]*Tag, error)
 		GetAllTagByProductID(id uuid.UUID) ([]*Tag, error)
 	}
+	CartItems interface {
+		Insert(cartItem *CartItem) error
+		Delete(userId uuid.UUID, productId uuid.UUID) error
+		GetAllByUserID(id uuid.UUID) ([]*CartItem, error)
+		Update(item *CartItem) error
+		GetQuantity(userId uuid.UUID, productId uuid.UUID) (int, error)
+	}
 }
 
 func NewModels(db *sql.DB) Models {
@@ -49,5 +56,6 @@ func NewModels(db *sql.DB) Models {
 		Products:   ProductModel{DB: db},
 		Categories: CategoryModel{DB: db},
 		Tags:       TagModel{DB: db},
+		CartItems:  CartItemModel{DB: db},
 	}
 }

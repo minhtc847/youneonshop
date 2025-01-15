@@ -23,12 +23,7 @@ type UserRequest struct {
 // @Success 200 {object} data.User
 // @Router /users [post]
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
-		Email     string `json:"email"`
-		Password  string `json:"password"`
-	}
+	var input UserRequest
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)

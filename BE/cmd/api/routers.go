@@ -26,6 +26,11 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/categories", app.getAllCategories)
 
+	router.HandlerFunc(http.MethodGet, "/carts", app.requireAuthenticatedUser(app.getCartHandler))
+	router.HandlerFunc(http.MethodPost, "/carts", app.requireAuthenticatedUser(app.insertCartHandler))
+	router.HandlerFunc(http.MethodDelete, "/carts/:id", app.requireAuthenticatedUser(app.removeCartItemHandler))
+	router.HandlerFunc(http.MethodPut, "/carts/:id", app.requireAuthenticatedUser(app.updateCartItemHandler))
+
 	return app.enableCORS(app.authenticate(router))
 
 }
