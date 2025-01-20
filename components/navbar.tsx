@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import Link from "next/link"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Menu, X, User, LogOut } from 'lucide-react'
-import Logo from './logo'
-import { useRouter } from 'next/navigation'
-import { signOut, useSession } from 'next-auth/react'
+import { ShoppingCart, Menu, X, User, LogOut } from "lucide-react"
+import Logo from "./logo"
+import { useRouter } from "next/navigation"
+import { signOut, useSession } from "next-auth/react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,50 +26,64 @@ export default function Navbar() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0)
     }
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener("scroll", handleScroll)
 
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener("scroll", handleScroll)
     }
   }, [])
 
   useEffect(() => {
-    console.log('Session status:', status)
-    console.log('Session data:', session)
+    console.log("Session status:", status)
+    console.log("Session data:", session)
   }, [status, session])
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' })
+    await signOut({ callbackUrl: "/" })
   }
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-black/80 backdrop-blur-md' : 'bg-transparent'}`}>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-black/80 backdrop-blur-md" : "bg-transparent"}`}
+    >
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Logo />
           <div className="hidden md:flex space-x-4 items-center">
-            <NavLink href="/" className="px-2">Home</NavLink>
-            <NavLink href="/products" className="px-2">Products</NavLink>
-            <NavLink href="/design" className="px-2">Design Your Own</NavLink>
-            <NavLink href="/about" className="px-2">About</NavLink>
-            <NavLink href="/contact" className="px-2">Contact</NavLink>
-            <NavLink href="/faq" className="px-2">FAQ</NavLink>
-            {status === 'authenticated' ? (
+            <NavLink href="/" className="px-2">
+              Home
+            </NavLink>
+            <NavLink href="/products" className="px-2">
+              Products
+            </NavLink>
+            <NavLink href="/design" className="px-2">
+              Design Your Own
+            </NavLink>
+            <NavLink href="/about" className="px-2">
+              About
+            </NavLink>
+            <NavLink href="/contact" className="px-2">
+              Contact
+            </NavLink>
+            <NavLink href="/faq" className="px-2">
+              FAQ
+            </NavLink>
+            {status === "authenticated" ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-white border-white hover:bg-neon-blue hover:text-black transition-colors duration-300 bg-black">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-white border-white hover:bg-neon-blue hover:text-black transition-colors duration-300 bg-black"
+                  >
                     <User className="mr-2 h-4 w-4" /> Account
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push('/account')}>
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/orders')}>
-                    Orders
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/account")}>Profile</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/orders")}>Orders</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
@@ -77,11 +91,21 @@ export default function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button asChild variant="outline" size="sm" className="text-white border-white hover:bg-neon-blue hover:text-black transition-colors duration-300 w-24 bg-black">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="text-white border-white hover:bg-neon-blue hover:text-black transition-colors duration-300 w-24 bg-black"
+              >
                 <Link href="/login">Login</Link>
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="text-white hover:text-neon-yellow transition-colors duration-300 relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:text-neon-yellow transition-colors duration-300 relative"
+              onClick={() => router.push("/cart")}
+            >
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute top-0 right-0 bg-neon-pink text-black text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
                 0
@@ -101,21 +125,36 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-black/90 backdrop-blur-md">
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-            {status === 'authenticated' ? (
+            {status === "authenticated" ? (
               <>
-                <Button asChild variant="ghost" size="sm" className="text-white hover:text-neon-blue transition-colors duration-300 justify-start">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:text-neon-blue transition-colors duration-300 justify-start"
+                >
                   <Link href="/account">
                     <User className="h-5 w-5 mr-2" />
                     Account
                   </Link>
                 </Button>
-                <Button onClick={handleLogout} variant="ghost" size="sm" className="text-white hover:text-neon-pink transition-colors duration-300 justify-start">
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:text-neon-pink transition-colors duration-300 justify-start"
+                >
                   <LogOut className="h-5 w-5 mr-2" />
                   Logout
                 </Button>
               </>
             ) : (
-              <Button asChild variant="ghost" size="sm" className="text-white hover:text-neon-blue transition-colors duration-300 justify-start">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-white hover:text-neon-blue transition-colors duration-300 justify-start"
+              >
                 <Link href="/login">
                   <User className="h-5 w-5 mr-2" />
                   Login
@@ -128,7 +167,12 @@ export default function Navbar() {
             <NavLink href="/about">About</NavLink>
             <NavLink href="/contact">Contact</NavLink>
             <NavLink href="/faq">FAQ</NavLink>
-            <Button variant="ghost" size="sm" className="text-white hover:text-neon-yellow transition-colors duration-300 justify-start">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:text-neon-yellow transition-colors duration-300 justify-start"
+              onClick={() => router.push("/cart")}
+            >
               <ShoppingCart className="h-5 w-5 mr-2" />
               Cart (0)
             </Button>
@@ -141,7 +185,10 @@ export default function Navbar() {
 
 function NavLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
   return (
-    <Link href={href} className={`text-white hover:text-neon-blue transition-colors duration-300 font-medium ${className || ''}`}>
+    <Link
+      href={href}
+      className={`text-white hover:text-neon-blue transition-colors duration-300 font-medium ${className || ""}`}
+    >
       {children}
     </Link>
   )

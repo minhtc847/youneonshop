@@ -5,11 +5,11 @@ import qs from 'qs';
 // Helper function to handle API errors
 const handleApiError = (error: any, defaultValue: any = null) => {
   if (error.response) {
-    console.error(`API Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+    console.log(`API Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
   } else if (error.request) {
-    console.error('No response received from server:', error.request);
+    console.log('No response received from server:', error.request);
   } else {
-    console.error('Request setup error:', error.message);
+    console.log('Request setup error:', error.message);
   }
   return defaultValue;
 };

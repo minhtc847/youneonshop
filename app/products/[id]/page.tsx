@@ -28,7 +28,7 @@ export default function ProductPage() {
         const productData = await getProductById(id as string)
         setProduct(productData.product)
       } catch (error) {
-        console.error('Error fetching product:', error)
+        console.log('Error fetching product:', error)
         setError('Failed to load product. Please try again later.')
       }
       setIsLoading(false)

@@ -1,44 +1,72 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { FaGoogle } from 'react-icons/fa'
-import SimplifiedNavbar from '@/components/simplified-navbar'
-import { toast } from 'react-toastify'
-import { signIn } from '@/service/userServices'
-import { useSession } from 'next-auth/react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FaGoogle } from "react-icons/fa";
+import SimplifiedNavbar from "@/components/simplified-navbar";
+import { toast } from "react-toastify";
+import { signIn as nextAuthSignIn, useSession } from "next-auth/react"; // Import hooks từ NextAuth
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const router = useRouter()
-  const { data: session, status } = useSession()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
+  const { data: session, status } = useSession(); // Lấy trạng thái đăng nhập
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // Nếu người dùng đã đăng nhập, chuyển hướng về trang "/"
+  useEffect(() => {
+    if (status === "authenticated") {
+      toast.info("You are already logged in!");
+      router.push("/"); // Điều hướng về trang chính
+    }
+  }, [status, router]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const result = await signIn('credentials', { email, password })
-      console.log('Sign in result:', result)
+      const result = await nextAuthSignIn("credentials", {
+        redirect: false, // Ngăn redirect mặc định
+        email,
+        password,
+      });
+
       if (result?.error) {
-        toast.error(result.error)
+        toast.error(result.error);
       } else {
-        toast.success('Login successful!')
-        console.log('Session:', session)
-        router.push('/')
+        toast.success("Login successful!");
+        router.push("/"); // Điều hướng về trang chính
       }
     } catch (error) {
-      console.error('Login failed:', error)
-      toast.error('Login failed. Please check your credentials and try again.')
+      console.error("Login failed:", error);
+      toast.error("Login failed. Please check your credentials.");
     }
-  }
+  };
 
-  const handleGoogleSignIn = () => {
-    signIn('google')
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await nextAuthSignIn("google", {
+        redirect: false, // Ngăn redirect mặc định
+      });
+
+      if (result?.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Google login successful!");
+        router.push("/"); // Điều hướng về trang chính
+      }
+    } catch (error) {
+      console.error("Google login failed:", error);
+      toast.error("Google login failed. Please try again.");
+    }
+  };
+
+  if (status === "authenticated") {
+    return null; // Trả về null để tránh hiển thị giao diện login
   }
 
   return (
@@ -54,7 +82,9 @@ export default function LoginPage() {
           <h2 className="text-neon-blue text-3xl mb-6 text-center font-bold">Welcome Back</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="email" className="text-white text-sm font-semibold">Email</Label>
+              <Label htmlFor="email" className="text-white text-sm font-semibold">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -66,7 +96,9 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <Label htmlFor="password" className="text-white text-sm font-semibold">Password</Label>
+              <Label htmlFor="password" className="text-white text-sm font-semibold">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -77,7 +109,10 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-neon-blue hover:bg-neon-blue/80 text-black font-bold py-3 rounded-md transition-all duration-300 transform hover:scale-105">
+            <Button
+              type="submit"
+              className="w-full bg-neon-blue hover:bg-neon-blue/80 text-black font-bold py-3 rounded-md transition-all duration-300 transform hover:scale-105"
+            >
               Login
             </Button>
           </form>
@@ -101,7 +136,7 @@ export default function LoginPage() {
             </div>
           </div>
           <p className="mt-8 text-center text-gray-400">
-            Don't have an account?{' '}
+            Don't have an account?{" "}
             <Link href="/register" className="text-neon-pink hover:underline transition-all duration-300">
               Register here
             </Link>
@@ -109,6 +144,5 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </>
-  )
+  );
 }
-

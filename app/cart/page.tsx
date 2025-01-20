@@ -1,146 +1,193 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { motion } from 'framer-motion'
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios from "@/setup/axios";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { Trash2 } from "lucide-react";
 
-// Mock data for cart items
-const initialCartItems = [
-  { id: 1, name: 'Blue Wave', price: 129.99, quantity: 1, image: '/neon-2.jpg' },
-  { id: 2, name: 'Pink Flamingo', price: 129.99, quantity: 1, image: '/neon-2.jpg' },
-  { id: 3, name: 'Yellow Bolt', price: 89.99, quantity: 1, image: '/neon-2.jpg' },
-]
+interface CartItem {
+  id: string;
+  product_id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(initialCartItems)
+  const router = useRouter();
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  const updateQuantity = (id: number, newQuantity: number) => {
-    setCartItems(cartItems.map(item =>
-      item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
-    ))
+  // Lấy token từ localStorage
+  useEffect(() => {
+    const storedToken = localStorage.getItem("bearerToken");
+    if (!storedToken) {
+      router.push("/login"); // Redirect nếu không có token
+    } else {
+      setToken(storedToken);
+    }
+  }, [router]);
+
+  // Lấy danh sách sản phẩm trong giỏ hàng
+  useEffect(() => {
+    if (token) {
+      fetchCartItems();
+    }
+  }, [token]);
+
+  const fetchCartItems = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get("/carts", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCartItems(response.data.cart_items || []);
+    } catch (err) {
+      console.error("Error fetching cart items:", err);
+      setError("Failed to fetch cart items. Please try again.");
+      toast.error("Failed to fetch cart items. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Xử lý xóa sản phẩm khỏi giỏ hàng
+  const handleRemoveItem = async (itemId: string) => {
+    try {
+      await axios.delete(`/carts/${itemId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+      toast.success("Item removed from cart");
+    } catch (err) {
+      console.error("Error removing item from cart:", err);
+      toast.error("Failed to remove item from cart. Please try again.");
+    }
+  };
+
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold mb-8 text-neon-blue">Your Cart</h1>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, index) => (
+            <Skeleton key={index} className="h-24 w-full" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter(item => item.id !== id))
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold mb-8 text-neon-blue">Your Cart</h1>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </div>
+    );
   }
-
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = 15 // Flat rate shipping
-  const total = subtotal + shipping
 
   return (
     <div className="container mx-auto px-4 py-16">
       <motion.h1
-        className="text-5xl font-bold mb-12 text-center text-neon-blue"
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        className="text-4xl font-bold mb-8 text-neon-blue"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         Your Cart
       </motion.h1>
-
       {cartItems.length === 0 ? (
-        <motion.div
-          className="text-center"
+        <motion.p
+          className="text-xl text-gray-400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <ShoppingBag className="mx-auto text-neon-pink w-24 h-24 mb-4" />
-          <p className="text-2xl text-gray-400 mb-8">Your cart is empty</p>
-          <Button asChild className="bg-neon-blue hover:bg-neon-blue/80 text-black font-bold">
-            <Link href="/products">Continue Shopping</Link>
-          </Button>
-        </motion.div>
+          Your cart is empty. Start shopping to add items to your cart!
+        </motion.p>
       ) : (
-        <div className="grid md:grid-cols-3 gap-8">
-          <motion.div
-            className="md:col-span-2 space-y-6"
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {cartItems.map((item) => (
-              <div key={item.id} className="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg">
-                <div className="flex-shrink-0">
-                  <Image src={item.image} alt={item.name} width={80} height={80} className="rounded-md" />
-                </div>
-                <div className="flex-grow">
-                  <h2 className="text-xl font-semibold text-neon-blue">{item.name}</h2>
-                  <p className="text-neon-yellow">₫{item.price.toLocaleString()}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="text-neon-pink hover:text-neon-pink/80"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                    className="w-16 text-center bg-gray-700 text-white border-gray-600"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="text-neon-green hover:text-neon-green/80"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeItem(item.id)}
-                  className="text-neon-pink hover:text-neon-pink/80"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </Button>
-              </div>
-            ))}
-          </motion.div>
-
-          <motion.div
-            className="md:col-span-1"
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <h2 className="text-2xl font-semibold mb-4 text-neon-pink">Order Summary</h2>
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Subtotal</span>
-                  <span className="text-white">₫{subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Shipping</span>
-                  <span className="text-white">₫{shipping.toLocaleString()}</span>
-                </div>
-                <div className="border-t border-gray-600 pt-2 mt-2">
-                  <div className="flex justify-between">
-                    <span className="text-lg font-semibold text-neon-blue">Total</span>
-                    <span className="text-lg font-semibold text-neon-yellow">₫{total.toLocaleString()}</span>
-                  </div>
+        <motion.div
+          className="space-y-6"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            visible: { transition: { staggerChildren: 0.1 } },
+          }}
+        >
+          {cartItems.map((item) => (
+            <motion.div
+              key={item.id}
+              className="flex items-center justify-between bg-gray-800 p-4 rounded-lg"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+            >
+              <div className="flex items-center space-x-4">
+                <Image
+                  src={item.image || "/placeholder.svg"}
+                  alt={item.name}
+                  width={80}
+                  height={80}
+                  className="rounded-md"
+                />
+                <div>
+                  <h2 className="text-xl font-semibold text-neon-pink">{item.name}</h2>
+                  <p className="text-gray-400">Quantity: {item.quantity}</p>
+                  <p className="text-neon-green">${item.price.toFixed(2)}</p>
                 </div>
               </div>
-              <Button className="w-full bg-neon-pink hover:bg-neon-pink/80 text-black font-bold">
-                Proceed to Checkout
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleRemoveItem(item.id)}
+                className="text-red-500 hover:text-red-700 transition-colors duration-200"
+              >
+                <Trash2 size={24} />
               </Button>
-            </div>
+            </motion.div>
+          ))}
+          <motion.div
+            className="flex justify-between items-center mt-8 pt-4 border-t border-gray-700"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <h3 className="text-2xl font-bold text-neon-blue">Total:</h3>
+            <p className="text-2xl font-bold text-neon-green">${calculateTotal().toFixed(2)}</p>
           </motion.div>
-        </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
+            <Button className="w-full bg-neon-blue hover:bg-neon-blue/80 text-black font-bold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-glow-blue">
+              Proceed to Checkout
+            </Button>
+          </motion.div>
+        </motion.div>
       )}
     </div>
-  )
+  );
 }
-

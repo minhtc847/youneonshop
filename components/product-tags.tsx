@@ -22,7 +22,7 @@ export default function ProductTags({ selectedTags, onTagSelect }: ProductTagsPr
         const tagsData = await getTags();
         setTags(tagsData);
       } catch (error) {
-        console.error('Error fetching tags:', error);
+        console.log('Error fetching tags:', error);
       } finally {
         setIsLoading(false);
       }
