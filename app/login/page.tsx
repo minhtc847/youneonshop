@@ -26,11 +26,20 @@ export default function LoginPage() {
     }
   }, [status, router]);
 
+  // Lưu authentication_token vào localStorage
+  useEffect(() => {
+    if (session?.user?.authentication_token) {
+      localStorage.setItem("bearer_token", session.user.authentication_token);
+      console.log("Token saved to local storage:", session.user.authentication_token);
+    }
+  }, [session]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const result = await nextAuthSignIn("credentials", {
-        redirect: false, // Ngăn redirect mặc định
+        redirect: false, // Không redirect mặc định
         email,
         password,
       });
@@ -38,8 +47,17 @@ export default function LoginPage() {
       if (result?.error) {
         toast.error(result.error);
       } else {
-        toast.success("Login successful!");
-        router.push("/"); // Điều hướng về trang chính
+        // Lấy session để lưu token
+        const sessionResponse = await fetch("/api/auth/session"); // Gọi API để lấy session
+        const sessionData = await sessionResponse.json();
+
+        if (sessionData?.user?.authentication_token) {
+          localStorage.setItem("bearerToken", sessionData.user.authentication_token);
+          toast.success("Login successful!");
+          router.push("/"); // Điều hướng về trang chính
+        } else {
+          toast.error("Failed to retrieve authentication token.");
+        }
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -47,23 +65,36 @@ export default function LoginPage() {
     }
   };
 
+
+
   const handleGoogleSignIn = async () => {
     try {
       const result = await nextAuthSignIn("google", {
-        redirect: false, // Ngăn redirect mặc định
+        redirect: false, // Không redirect mặc định
       });
 
       if (result?.error) {
         toast.error(result.error);
       } else {
-        toast.success("Google login successful!");
-        router.push("/"); // Điều hướng về trang chính
+        // Lấy session để lưu token
+        const sessionResponse = await fetch("/api/auth/session"); // Gọi API để lấy session
+        const sessionData = await sessionResponse.json();
+
+        if (sessionData?.user?.authentication_token) {
+          localStorage.setItem("authentication_token", sessionData.user.authentication_token);
+          toast.success("Google login successful!");
+          router.push("/"); // Điều hướng về trang chính
+        } else {
+          toast.error("Failed to retrieve authentication token.");
+        }
       }
     } catch (error) {
       console.error("Google login failed:", error);
       toast.error("Google login failed. Please try again.");
     }
   };
+
+
 
   if (status === "authenticated") {
     return null; // Trả về null để tránh hiển thị giao diện login

@@ -1,98 +1,128 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import axios from "@/setup/axios";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "react-toastify";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import { Trash2 } from "lucide-react";
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "react-toastify"
+import { motion } from "framer-motion"
+import Image from "next/image"
+import { Trash2, Minus, Plus } from "lucide-react"
+import { getCartItems, removeFromCart, updateCartItem } from "@/service/cartServices"
+import { useSession } from "next-auth/react"
 
 interface CartItem {
-  id: string;
-  product_id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
+  id: string
+  product_id: string
+  product_name: string
+  price: number
+  quantity: number
+  image: string
 }
 
 export default function CartPage() {
-  const router = useRouter();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const router = useRouter()
+  const { data: session, status } = useSession()
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null)
+  const [imageLoadError, setImageLoadError] = useState<Record<string, boolean>>({})
 
-  // Lấy token từ localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem("bearerToken");
-    if (!storedToken) {
-      router.push("/login"); // Redirect nếu không có token
+    if (status === "unauthenticated") {
+      router.push("/login")
+    } else if (status === "authenticated" && session?.user?.authentication_token) {
+      fetchCartItems(session.user.authentication_token)
+    } else if (status === "loading") {
+      // Do nothing while loading
     } else {
-      setToken(storedToken);
+      setError("Unable to authenticate. Please try logging in again.")
     }
-  }, [router]);
+  }, [status, session, router])
 
-  // Lấy danh sách sản phẩm trong giỏ hàng
-  useEffect(() => {
-    if (token) {
-      fetchCartItems();
-    }
-  }, [token]);
-
-  const fetchCartItems = async () => {
-    setIsLoading(true);
-    setError(null);
+  const fetchCartItems = async (token: string) => {
+    setIsLoading(true)
+    setError(null)
     try {
-      const response = await axios.get("/carts", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setCartItems(response.data.cart_items || []);
+      const response = await getCartItems(token)
+      setCartItems(response.cart)
     } catch (err) {
-      console.error("Error fetching cart items:", err);
-      setError("Failed to fetch cart items. Please try again.");
-      toast.error("Failed to fetch cart items. Please try again.");
+      console.error("Error fetching cart items:", err)
+      setError("Failed to fetch cart items. Please try again.")
+      toast.error("Failed to fetch cart items. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  // Xử lý xóa sản phẩm khỏi giỏ hàng
-  const handleRemoveItem = async (itemId: string) => {
+  const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
+    if (!session?.user?.authentication_token || newQuantity < 1) return
+
+    setUpdatingItemId(itemId)
     try {
-      await axios.delete(`/carts/${itemId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-      toast.success("Item removed from cart");
+      await updateCartItem(session.user.authentication_token, itemId, newQuantity)
+      setCartItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, quantity: newQuantity } : item)))
+      toast.success("Cart updated successfully")
     } catch (err) {
-      console.error("Error removing item from cart:", err);
-      toast.error("Failed to remove item from cart. Please try again.");
+      console.error("Error updating cart item:", err)
+      toast.error("Failed to update cart. Please try again.")
+    } finally {
+      setUpdatingItemId(null)
     }
-  };
+  }
+
+  const handleRemoveItem = async (itemId: string) => {
+    if (!session?.user?.authentication_token) return
+
+    try {
+      await removeFromCart(session.user.authentication_token, itemId)
+      setCartItems((prev) => prev.filter((item) => item.id !== itemId))
+      toast.success("Item removed from cart")
+    } catch (err) {
+      console.error("Error removing item from cart:", err)
+      toast.error("Failed to remove item. Please try again.")
+    }
+  }
+
+  const handleImageError = (itemId: string) => {
+    setImageLoadError((prev) => ({ ...prev, [itemId]: true }))
+  }
+
+  const getImageSrc = (item: CartItem) => {
+    if (imageLoadError[item.id]) {
+      return "/placeholder.svg"
+    }
+    return item.image || "/placeholder.svg"
+  }
 
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  }
 
-  if (isLoading) {
+  if (status === "loading" || isLoading) {
     return (
       <div className="container mx-auto px-4 py-16">
         <h1 className="text-4xl font-bold mb-8 text-neon-blue">Your Cart</h1>
         <div className="space-y-4">
           {[...Array(3)].map((_, index) => (
-            <Skeleton key={index} className="h-24 w-full" />
+            <Skeleton key={`skeleton-${index}`} className="h-24 w-full" />
           ))}
         </div>
       </div>
-    );
+    )
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold mb-8 text-neon-blue">Your Cart</h1>
+        <p className="text-white mb-4">Please log in to view your cart.</p>
+        <Button onClick={() => router.push("/login")} className="bg-neon-blue text-black">
+          Log In
+        </Button>
+      </div>
+    )
   }
 
   if (error) {
@@ -104,7 +134,7 @@ export default function CartPage() {
           <span className="block sm:inline">{error}</span>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -118,14 +148,20 @@ export default function CartPage() {
         Your Cart
       </motion.h1>
       {cartItems.length === 0 ? (
-        <motion.p
-          className="text-xl text-gray-400"
+        <motion.div
+          className="text-center space-y-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          Your cart is empty. Start shopping to add items to your cart!
-        </motion.p>
+          <p className="text-xl text-gray-400">Your cart is empty. Start shopping to add items to your cart!</p>
+          <Button
+            onClick={() => router.push("/products")}
+            className="bg-neon-blue hover:bg-neon-blue/80 text-black font-bold"
+          >
+            Browse Products
+          </Button>
+        </motion.div>
       ) : (
         <motion.div
           className="space-y-6"
@@ -137,7 +173,7 @@ export default function CartPage() {
         >
           {cartItems.map((item) => (
             <motion.div
-              key={item.id}
+              key={`cart-item-${item.id}`}
               className="flex items-center justify-between bg-gray-800 p-4 rounded-lg"
               variants={{
                 hidden: { opacity: 0, y: 20 },
@@ -146,26 +182,50 @@ export default function CartPage() {
             >
               <div className="flex items-center space-x-4">
                 <Image
-                  src={item.image || "/placeholder.svg"}
-                  alt={item.name}
+                  src={getImageSrc(item) || "/placeholder.svg"}
+                  alt={item.product_name}
                   width={80}
                   height={80}
                   className="rounded-md"
+                  onError={() => handleImageError(item.id)}
                 />
                 <div>
-                  <h2 className="text-xl font-semibold text-neon-pink">{item.name}</h2>
-                  <p className="text-gray-400">Quantity: {item.quantity}</p>
+                  <h2 className="text-xl font-semibold text-neon-pink">{item.product_name}</h2>
                   <p className="text-neon-green">${item.price.toFixed(2)}</p>
+                  <div className="flex items-center space-x-4 mt-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                      disabled={item.quantity <= 1 || updatingItemId === item.id}
+                      className="h-8 w-8"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="text-white">{item.quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                      disabled={updatingItemId === item.id}
+                      className="h-8 w-8"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleRemoveItem(item.id)}
-                className="text-red-500 hover:text-red-700 transition-colors duration-200"
-              >
-                <Trash2 size={24} />
-              </Button>
+              <div className="flex flex-col items-end space-y-2">
+                <p className="text-lg text-neon-yellow">${(item.price * item.quantity).toFixed(2)}</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveItem(item.id)}
+                  className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                >
+                  <Trash2 size={24} />
+                </Button>
+              </div>
             </motion.div>
           ))}
           <motion.div
@@ -189,5 +249,6 @@ export default function CartPage() {
         </motion.div>
       )}
     </div>
-  );
+  )
 }
+

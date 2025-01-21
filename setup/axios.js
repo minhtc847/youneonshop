@@ -20,7 +20,7 @@ externalAxios.interceptors.response.use(
         if (error.response) {
             if (error.response.status === 401) {
                 // Người dùng chưa đăng nhập
-                console.console.log();
+                console.log();
                 ('Người dùng chưa đăng nhập.');
                 // Có thể chuyển hướng đến trang đăng nhập
                 // router.replace('/login'); (sử dụng useRouter trong component)

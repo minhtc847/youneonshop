@@ -15,10 +15,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { getCartItems } from "@/service/cartServices"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
   const router = useRouter()
   const { data: session, status } = useSession()
 
@@ -32,6 +34,21 @@ export default function Navbar() {
       window.removeEventListener("scroll", handleScroll)
     }
   }, [])
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      if (session?.user?.authentication_token) {
+        try {
+          const response = await getCartItems(session.user.authentication_token)
+          setCartCount(response.cart.length)
+        } catch (error) {
+          console.error("Error fetching cart count:", error)
+        }
+      }
+    }
+
+    fetchCartCount()
+  }, [session])
 
   useEffect(() => {
     console.log("Session status:", status)
@@ -107,9 +124,11 @@ export default function Navbar() {
               onClick={() => router.push("/cart")}
             >
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute top-0 right-0 bg-neon-pink text-black text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                0
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute top-0 right-0 bg-neon-pink text-black text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
             </Button>
           </div>
           <Button
@@ -174,7 +193,7 @@ export default function Navbar() {
               onClick={() => router.push("/cart")}
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
-              Cart (0)
+              Cart ({cartCount})
             </Button>
           </div>
         </div>
