@@ -1,9 +1,12 @@
-import React from 'react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { ShoppingCart } from 'lucide-react'
+import type React from "react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
+import { ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useSession } from "next-auth/react"
+import { addToCart } from "@/service/cartServices"
+import { toast } from "react-toastify"
 
 interface ProductCardProps {
   id: string
@@ -14,24 +17,30 @@ interface ProductCardProps {
   tags: string[]
 }
 
-const ModernProductCard: React.FC<ProductCardProps> = ({
-  id,
-  name,
-  price,
-  image,
-  description,
-  tags
-}) => {
+const ModernProductCard: React.FC<ProductCardProps> = ({ id, name, price, image, description, tags }) => {
   const router = useRouter()
+  const { data: session } = useSession()
 
   const handleCardClick = () => {
     router.push(`/products/${id}`)
   }
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent card click when clicking the button
-    // Add to cart logic here
-    console.log('Added to cart:', id)
+
+    if (!session) {
+      toast.error("Please login to add items to cart")
+      router.push("/login")
+      return
+    }
+
+    try {
+      await addToCart(session.user.authentication_token, id, 1)
+      toast.success("Item added to cart")
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+      toast.error("Failed to add item to cart")
+    }
   }
 
   return (
@@ -44,7 +53,7 @@ const ModernProductCard: React.FC<ProductCardProps> = ({
     >
       <div className="relative aspect-square overflow-hidden">
         <Image
-          src={image || '/placeholder.svg'}
+          src={image || "/placeholder.svg"}
           alt={name}
           layout="fill"
           objectFit="cover"
@@ -55,22 +64,17 @@ const ModernProductCard: React.FC<ProductCardProps> = ({
         <h3 className="text-xl font-semibold mb-2 text-neon-blue truncate">{name}</h3>
         <div className="flex flex-wrap gap-2 mb-4">
           {tags.slice(0, 3).map((tag, index) => (
-            <span
-              key={index}
-              className="px-2 py-1 bg-gray-800 text-neon-green text-xs rounded-full"
-            >
+            <span key={index} className="px-2 py-1 bg-gray-800 text-neon-green text-xs rounded-full">
               {tag}
             </span>
           ))}
           {tags.length > 3 && (
-            <span className="px-2 py-1 bg-gray-800 text-neon-blue text-xs rounded-full">
-              +{tags.length - 3}
-            </span>
+            <span className="px-2 py-1 bg-gray-800 text-neon-blue text-xs rounded-full">+{tags.length - 3}</span>
           )}
         </div>
         <div className="flex items-center justify-between mb-4">
           <span className="text-2xl font-bold text-neon-pink animate-neon-pulse">
-            {price !== null && price !== undefined ? `${price.toLocaleString('vi-VN')}₫` : 'Price not available'}
+            {price !== null && price !== undefined ? `${price.toLocaleString("vi-VN")}₫` : "Price not available"}
           </span>
         </div>
         <Button
@@ -78,7 +82,7 @@ const ModernProductCard: React.FC<ProductCardProps> = ({
           onClick={handleAddToCart}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Thêm vào giỏ
+          Add to Cart
         </Button>
       </div>
     </motion.div>

@@ -25,7 +25,6 @@ export const getCartItems = async (token: string): Promise<CartResponse> => {
         Authorization: `Bearer ${token}`,
       },
     })
-    console.log("Cart items:", response.data)
     return response.data
   } catch (error) {
     console.error("Error fetching cart items:", error)
@@ -34,13 +33,17 @@ export const getCartItems = async (token: string): Promise<CartResponse> => {
 }
 
 // Add item to cart
-export const addToCart = async (token: string, item: CartItem) => {
+export const addToCart = async (token: string, product_id: string, quantity: number) => {
   try {
-    const response = await axios.post("/carts", item, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await axios.post(
+      "/carts",
+      { product_id, quantity },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    })
+    )
     return response.data
   } catch (error) {
     console.error("Error adding item to cart:", error)
