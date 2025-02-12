@@ -14,13 +14,13 @@ import (
 var AnonymousUser = &User{}
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	FirstName string    `json:"first-name"`
-	LastName  string    `json:"last_name"`
-	Password  password  `json:"-"`
-	Telephone string    `json:"telephone"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         uuid.UUID `json:"id"`
+	Email      string    `json:"email"`
+	FirstName  string    `json:"first-name"`
+	LastName   string    `json:"last_name"`
+	Password   password  `json:"-"`
+	Telephone  string    `json:"telephone"`
+	CreatedAt  time.Time `json:"created_at"`
 	ModifiedAt time.Time `json:"modified_at"`
 }
 type UserModel struct {
@@ -68,8 +68,10 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 	v.Check(len(password) <= 72, "password", "must not be more than 72 bytes long")
 }
 func ValidateUser(v *validator.Validator, user *User) {
-	v.Check(user.FirstName != "", "name", "must be provided")
-	v.Check(len(user.FirstName) <= 500, "name", "must not be more than 500 bytes long")
+	v.Check(user.FirstName != "", "first_name", "must be provided")
+	v.Check(len(user.FirstName) <= 500, "first_name", "must not be more than 500 bytes long")
+	v.Check(user.LastName != "", "last_name", "must be provided")
+	v.Check(len(user.LastName) <= 500, "last_name", "must not be more than 500 bytes long")
 	// Call the standalone ValidateEmail() helper.
 	ValidateEmail(v, user.Email)
 	if user.Password.plaintext != nil {
@@ -95,7 +97,7 @@ func (m UserModel) Insert(user *User) error {
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID)
 	if err != nil {
 		switch {
-		case err.Error() == `pq: duplicate key value violates unique constraint "users_unique_email"`:
+		case err.Error() == `pq: duplicate key value violates unique constraint "user_username_key"`:
 			return ErrDuplicateEmail
 		default:
 			return err
@@ -142,7 +144,6 @@ func (m UserModel) Update(user *User) error {
 	return nil
 }
 func (m UserModel) Get(id uuid.UUID) (*User, error) {
-	fmt.Println(id.String())
 	query := `
         SELECT id, email, first_name, last_name,telephone, password_hash, created_at, modified_at
 		FROM users

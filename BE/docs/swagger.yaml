@@ -16,6 +16,23 @@ definitions:
       telephone:
         type: string
     type: object
+  main.AddressRequest:
+    properties:
+      city:
+        type: string
+      description:
+        type: string
+      detail:
+        type: string
+      district:
+        type: string
+      receiver:
+        type: string
+      telephone:
+        type: string
+      ward:
+        type: string
+    type: object
   main.CartRequest:
     properties:
       product_id:
@@ -47,6 +64,97 @@ definitions:
 info:
   contact: {}
 paths:
+  /addresses:
+    get:
+      consumes:
+      - application/json
+      description: Get all addresses by user id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all addresses by user id
+      tags:
+      - addresses
+    post:
+      consumes:
+      - application/json
+      description: Create an address
+      parameters:
+      - description: address
+        in: body
+        name: address
+        required: true
+        schema:
+          $ref: '#/definitions/main.AddressRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.envelope'
+      security:
+      - ApiKeyAuth: []
+      summary: Create an address
+      tags:
+      - addresses
+  /addresses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an address
+      parameters:
+      - description: address id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an address
+      tags:
+      - addresses
+    put:
+      consumes:
+      - application/json
+      description: Update an address
+      parameters:
+      - description: address id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: address
+        in: body
+        name: address
+        required: true
+        schema:
+          $ref: '#/definitions/main.AddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.envelope'
+      security:
+      - ApiKeyAuth: []
+      summary: Update an address
+      tags:
+      - addresses
   /carts:
     get:
       consumes:

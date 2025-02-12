@@ -48,6 +48,13 @@ type Models struct {
 		Update(item *CartItem) error
 		GetQuantity(userId uuid.UUID, productId uuid.UUID) (int, error)
 	}
+	Address interface {
+		Insert(address *Address) error
+		GetAllByUserID(id uuid.UUID) ([]*Address, error)
+		Get(id uuid.UUID) (*Address, error)
+		Update(address *Address) error
+		Delete(id uuid.UUID) error
+	}
 }
 
 func NewModels(db *sql.DB) Models {
@@ -57,5 +64,6 @@ func NewModels(db *sql.DB) Models {
 		Categories: CategoryModel{DB: db},
 		Tags:       TagModel{DB: db},
 		CartItems:  CartItemModel{DB: db},
+		Address:    AddressModel{DB: db},
 	}
 }

@@ -31,6 +31,11 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodDelete, "/carts/:id", app.requireAuthenticatedUser(app.removeCartItemHandler))
 	router.HandlerFunc(http.MethodPut, "/carts/:id", app.requireAuthenticatedUser(app.updateCartItemHandler))
 
+	router.HandlerFunc(http.MethodGet, "/addresses", app.requireAuthenticatedUser(app.getAddressesByUserId))
+	router.HandlerFunc(http.MethodPost, "/addresses", app.requireAuthenticatedUser(app.createAddressHandler))
+	router.HandlerFunc(http.MethodDelete, "/addresses/:id", app.requireAuthenticatedUser(app.deleteAddressHandler))
+	router.HandlerFunc(http.MethodPut, "/addresses/:id", app.requireAuthenticatedUser(app.updateAddressHandler))
+
 	return app.enableCORS(app.authenticate(router))
 
 }

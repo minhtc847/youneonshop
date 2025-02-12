@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -144,7 +143,6 @@ func (m UserModel) Update(user *User) error {
 	return nil
 }
 func (m UserModel) Get(id uuid.UUID) (*User, error) {
-	fmt.Println(id.String())
 	query := `
         SELECT id, email, first_name, last_name,telephone, password_hash, created_at, modified_at
 		FROM users
