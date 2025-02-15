@@ -94,6 +94,7 @@ export default function LoginPage() {
 
         const user = sessionData?.user as SessionUser;
         if (user?.authentication_token) {
+          localStorage.setItem("authentication_token", user.authentication_token);
           toast.success("Google login successful!");
           router.push("/"); // Điều hướng về trang chính
         } else {

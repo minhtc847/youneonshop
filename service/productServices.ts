@@ -77,4 +77,3 @@ export const getTags = async (): Promise<string[]> => {
     return handleApiError(error, []);
   }
 };
-

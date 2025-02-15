@@ -31,7 +31,7 @@ export default function AboutPage() {
               src='/product-2.jpg'
             alt="Neon Lights Workshop"
             width={300}
-            height={400}
+            height={200}
             className="rounded-lg shadow-lg"
           />
         </motion.div>

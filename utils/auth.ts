@@ -19,3 +19,7 @@ export const updateLastLoginTime = () => {
   localStorage.setItem('lastLoginTime', new Date().getTime().toString())
 }
 
+export const redirectToLogin = () => {
+  const event = new CustomEvent('redirectToLogin');
+  window.dispatchEvent(event);
+};

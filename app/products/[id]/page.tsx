@@ -11,6 +11,8 @@ import { ShoppingCart, ChevronLeft, Truck, RefreshCcw, Shield } from 'lucide-rea
 import { getProductById } from '@/service/productServices'
 import { Product } from '@/types/product'
 import { toast } from 'react-toastify'
+import {addToCart} from "@/service/cartServices";
+import {useSession} from "next-auth/react";
 
 export default function ProductPage() {
   const { id } = useParams()
@@ -20,7 +22,7 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
   const [activeImage, setActiveImage] = useState(0)
   const [error, setError] = useState<string | null>(null)
-
+  const { data: session } = useSession()
   useEffect(() => {
     const fetchProduct = async () => {
       setIsLoading(true)
@@ -40,7 +42,10 @@ export default function ProductPage() {
   }, [id])
 
   const handleAddToCart = () => {
-    toast.success(`Added ${quantity} ${quantity > 1 ? 'items' : 'item'} to cart`)
+    const token = session?.user?.authentication_token;
+
+    addToCart(token, id as string,quantity).then(() =>  toast("Đã thêm vào giỏ hàng"));
+
   }
 
   if (isLoading) {

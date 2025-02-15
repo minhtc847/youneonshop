@@ -19,7 +19,7 @@ externalAxios.interceptors.response.use(
             // User is not logged in
             toast("Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
             redirectToLogin();
-        } else if (error.response && error.response.data.message) {
+        } else if (error.response.data && error.response.data.message) {
             toast(error.response.data.message+""+error.response.status);
             console.log(error.response.data.message);
         } else {

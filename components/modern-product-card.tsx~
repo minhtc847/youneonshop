@@ -37,7 +37,7 @@ const ModernProductCard: React.FC<ProductCardProps> = ({
     // Add to cart logic here
 
     const token = session?.user?.authentication_token;
-
+    
     addToCart(token, id,1).then(() =>  toast("Đã thêm vào giỏ hàng"));
 
   }

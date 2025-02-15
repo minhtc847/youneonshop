@@ -1,20 +1,15 @@
-import axios from "../setup/axios"
 
-interface CartItem {
-  id: string
+import axios from '../setup/axios';
+export interface CartItem {
   product_id: string
+  product_name : string
   quantity: number
+  image: string
+  price: number
 }
 
-interface CartResponse {
-  cart: {
-    id: string
-    product_id: string
-    product_name: string
-    price: number
-    quantity: number
-    image: string
-  }[]
+export interface CartResponse {
+    cart: CartItem[]
 }
 
 // Get all cart items
@@ -34,16 +29,18 @@ export const getCartItems = async (token: string): Promise<CartResponse> => {
 }
 
 // Add item to cart
-export const addToCart = async (token: string, item: CartItem) => {
+export const addToCart = async (token: string, productId:string,quantity:number) => {
   try {
-    const response = await axios.post("/carts", item, {
+    const response = await axios.post("/carts", {
+        "product_id": productId,
+        "quantity": quantity
+    }, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
     return response.data
   } catch (error) {
-    console.error("Error adding item to cart:", error)
     throw error
   }
 }
@@ -52,15 +49,18 @@ export const addToCart = async (token: string, item: CartItem) => {
 export const updateCartItem = async (token: string, itemId: string, quantity: number) => {
   try {
     const response = await axios.put(
-      `/carts/${itemId}`,
-      { quantity },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+        `/carts/${itemId}`,
+        {
+          "product_id": itemId,
+          "quantity": quantity
         },
-      },
-    )
-    return response.data
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+    );
+    return response.data;
   } catch (error) {
     console.error("Error updating cart item:", error)
     throw error

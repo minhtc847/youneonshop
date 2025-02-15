@@ -234,8 +234,7 @@ export default function CartPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.7 }}
           >
-            <Button className="w-full bg-neon-blue hover:bg-neon-blue/80 text-black font-bold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-glow-blue"
-            onClick={()=> router.push("/checkout")}>
+            <Button className="w-full bg-neon-blue hover:bg-neon-blue/80 text-black font-bold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-glow-blue">
               Proceed to Checkout
             </Button>
           </motion.div>

@@ -1,13 +1,32 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { loginUser, registerNewUser } from "@/service/userServices";
+import { Account, Profile as NextAuthProfile } from "next-auth";
+import { loginUser } from "@/service/userServices"; // Removed registerNewUserimport { Account, Profile as NextAuthProfile } from "next-auth";
+import { JWT } from "next-auth/jwt";
+import { User as NextAuthUser } from "next-auth";
+import { Session as NextAuthSession } from "next-auth";
+
+export interface Session extends NextAuthSession {
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    authentication_token?: string;
+  };
+}
+interface User extends NextAuthUser {
+  authentication_token?: string;
+}
+interface Profile extends NextAuthProfile {
+  authentication_token?: string;
+}
 
 const handler = NextAuth({
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -32,74 +51,51 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ account, profile }) {
-      if (account.provider === "google") {
-        const defaultPassword = "986gjhsdgfbhjgsadjhf0273842098"; // Mật khẩu mặc định cho user dùng Google
+    async signIn({ account, profile }: { account: Account | null; profile?: Profile }) {
+      if (account?.provider === "google" && profile) {
+        const defaultPassword = "986gjhsdgfbhjgsadjhf0273842098"; // Default password for Google users
 
         try {
-          // Đăng ký tài khoản nếu chưa tồn tại
-          await registerNewUser({
-            email: profile.email,
-            first_name: profile.given_name,
-            last_name: profile.family_name,
-            password: defaultPassword,
-          });
-          console.log("New user registered with Google:", profile.email);
-        } catch (error) {
-          // Kiểm tra nếu lỗi là do tài khoản đã tồn tại
-          if (error.response && error.response.status === 422) {
-            const errorMessage = error.response.data?.error?.email;
-            if (errorMessage !== "a user with this email address already exists") {
-              console.error("Unexpected error during Google registration:", error);
-              return false;
-            }
-          } else {
-            console.error("Error during Google registration:", error);
-            return false;
-          }
-        }
-
-        try {
-          // Đăng nhập bằng API loginUser với mật khẩu mặc định
           const response = await loginUser({
             email: profile.email,
             password: defaultPassword,
           });
 
-          // Gắn token vào profile để lưu vào session
           if (response.authentication_token) {
             profile.authentication_token = response.authentication_token;
           }
 
           console.log("Google login successful:", response);
-          return !!response; // Nếu login thành công, cho phép đăng nhập
+          return !!response;
         } catch (error) {
           console.error("Error during Google login:", error);
-          return false;
+          return "/login?error=not signed in";
         }
       }
 
-      return true; // Cho phép đăng nhập cho các provider khác
+      return true;
     },
-    async jwt({ token, user, profile }) {
-      if (user && user.authentication_token) {
+    async jwt({ token, user, profile }: { token: JWT; user?: User; profile?: Profile }) {
+      if (user && 'authentication_token' in user) {
         token.authentication_token = user.authentication_token;
       }
 
-      if (profile && profile.authentication_token) {
+      if (profile && 'authentication_token' in profile) {
         token.authentication_token = profile.authentication_token;
       }
 
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       session.user = session.user || {};
-      session.user.authentication_token = token.authentication_token; // Gắn token vào session
+      const expiresIn = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+      session.expires = new Date(Date.now() + expiresIn).toISOString();
+      session.user.authentication_token = token.authentication_token;
       return session;
-    },
+    }
   },
   pages: {
-
+    signIn: '/login',
   },
   debug: process.env.NODE_ENV === "development",
 });

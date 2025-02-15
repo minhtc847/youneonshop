@@ -23,6 +23,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from 'react-toastify'
 import ModernProductCard from '@/components/modern-product-card'
 import { useDebounce } from 'use-debounce'
+import {addToCart} from "@/service/cartServices";
+import {useSession} from "next-auth/react";
 
 const themes = {
   blue: { primary: '#00ffff', secondary: '#0080ff' },
@@ -66,16 +68,11 @@ export default function ProductsPage() {
   const [allProductsLoaded, setAllProductsLoaded] = useState(false)
 
   const [debouncedSearchTerm] = useDebounce(currentFilters.searchTerm, 300)
-
   useEffect(() => {
     if (debouncedSearchTerm !== appliedFilters.searchTerm) {
       setAppliedFilters(prev => ({ ...prev, searchTerm: debouncedSearchTerm }))
       setCurrentPage(1)
-      updateQueryParams({
-        ...appliedFilters,
-        search: debouncedSearchTerm || null,
-        page: '1'
-      })
+      updateQueryParams({ page: '1' })
     }
   }, [debouncedSearchTerm])
 
