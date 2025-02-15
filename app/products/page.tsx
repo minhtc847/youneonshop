@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import {useState, useEffect, useCallback, Suspense} from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,8 +23,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from 'react-toastify'
 import ModernProductCard from '@/components/modern-product-card'
 import { useDebounce } from 'use-debounce'
-import {addToCart} from "@/service/cartServices";
-import {useSession} from "next-auth/react";
 
 const themes = {
   blue: { primary: '#00ffff', secondary: '#0080ff' },
@@ -47,8 +45,14 @@ const initialFilterState: FilterState = {
   searchTerm: '',
   sortOrder: 'asc'
 }
-
 export default function ProductsPage() {
+  return (
+      <Suspense fallback={<p>Loading...</p>}>
+        <ProductssPage />
+      </Suspense>
+  );
+}
+function ProductssPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -63,19 +67,11 @@ export default function ProductsPage() {
 
   const [currentPage, setCurrentPage] = useState(1)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [theme, setTheme] = useState<keyof typeof themes>('blue')
+  const [theme] = useState<keyof typeof themes>('blue')
   const [error, setError] = useState<string | null>(null)
   const [allProductsLoaded, setAllProductsLoaded] = useState(false)
 
   const [debouncedSearchTerm] = useDebounce(currentFilters.searchTerm, 300)
-  useEffect(() => {
-    if (debouncedSearchTerm !== appliedFilters.searchTerm) {
-      setAppliedFilters(prev => ({ ...prev, searchTerm: debouncedSearchTerm }))
-      setCurrentPage(1)
-      updateQueryParams({ page: '1' })
-    }
-  }, [debouncedSearchTerm])
-
   const updateQueryParams = useCallback((params: Record<string, string | string[] | null>) => {
     const newSearchParams = new URLSearchParams(searchParams.toString());
 
@@ -91,6 +87,15 @@ export default function ProductsPage() {
 
     router.push(`/products?${newSearchParams.toString()}`);
   }, [router, searchParams]);
+  useEffect(() => {
+    if (debouncedSearchTerm !== appliedFilters.searchTerm) {
+      setAppliedFilters(prev => ({ ...prev, searchTerm: debouncedSearchTerm }))
+      setCurrentPage(1)
+      updateQueryParams({ page: '1' })
+    }
+  }, [appliedFilters.searchTerm, debouncedSearchTerm, updateQueryParams])
+
+
 
   const changePage = async (newPage: number) => {
     setIsLoading(true);
@@ -275,6 +280,7 @@ export default function ProductsPage() {
 
 
   return (
+      <Suspense fallback={<div>Loading...</div>}>
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <header className="bg-black py-16 px-4 relative overflow-hidden">
         <div className="container mx-auto relative z-10">
@@ -511,6 +517,7 @@ export default function ProductsPage() {
         </div>
       </main>
     </div>
+      </Suspense>
   )
 }
 

@@ -1,11 +1,19 @@
 "use client"
 
-import { useEffect } from "react"
+import {Suspense, useEffect} from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default function AuthError() {
+  return (
+      <Suspense fallback={<p>Loading...</p>}>
+        <AuthError1 />
+      </Suspense>
+  );
+}
+
+function AuthError1() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
 

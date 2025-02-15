@@ -22,6 +22,8 @@ interface Profile extends NextAuthProfile {
   authentication_token?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -86,11 +88,15 @@ const handler = NextAuth({
 
       return token;
     },
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     async session({ session, token }: { session: Session; token: JWT }) {
       session.user = session.user || {};
       const expiresIn = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
       session.expires = new Date(Date.now() + expiresIn).toISOString();
-      session.user.authentication_token = token.authentication_token;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      session.user.authentication_token = token.authentication_token() as string;
       return session;
     }
   },

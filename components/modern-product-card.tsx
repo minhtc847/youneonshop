@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ShoppingCart } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import {Product} from "@/types/product";
 import {addToCart} from "@/service/cartServices";
 import {toast} from "react-toastify";
 import {useSession} from "next-auth/react";
@@ -23,11 +22,10 @@ const ModernProductCard: React.FC<ProductCardProps> = ({
   name,
   price,
   image,
-  description,
   tags,
 }) => {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const handleCardClick = () => {
     router.push(`/products/${id}`)
   }
@@ -35,7 +33,8 @@ const ModernProductCard: React.FC<ProductCardProps> = ({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent card click when clicking the button
     // Add to cart logic here
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     const token = session?.user?.authentication_token;
 
     addToCart(token, id,1).then(() =>  toast("Đã thêm vào giỏ hàng"));

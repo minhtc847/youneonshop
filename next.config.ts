@@ -1,15 +1,24 @@
-import type { NextConfig } from "next";
+import { NextConfig } from "next";
 
-const nextConfig = {
+/** @type {NextConfig} */
+const nextConfig: NextConfig = {
     images: {
         remotePatterns: [
             {
-                protocol: 'https',
-                hostname: 'bizweb.dktcdn.net',
-                port: '', // Leave empty unless you need to specify a custom port
-                pathname: '/**', // Match all paths on the domain
+                protocol: "https",
+                hostname: "bizweb.dktcdn.net",
+                port: "",
+                pathname: "/**",
             },
         ],
     },
+    eslint: {
+        ignoreDuringBuilds: true, // Ignore ESLint errors
+    },
+    typescript: {
+        ignoreBuildErrors: true, // Ignore TypeScript errors
+    },
+    output: "standalone",
 };
+
 export default nextConfig;

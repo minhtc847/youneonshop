@@ -15,13 +15,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { getCartItems } from "@/service/cartServices"
-import { Session } from "@/app/api/auth/[...nextauth]/route"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [cartCount, setCartCount] = useState(0)
+  const [cartCount] = useState(0)
   const router = useRouter()
   const { data: session, status } = useSession()
 

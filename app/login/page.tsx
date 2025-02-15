@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,15 @@ interface SessionUser {
 }
 
 export default function LoginPage() {
+  return (
+      <Suspense fallback={<p>Loading...</p>}>
+        <LoginPage1 />
+      </Suspense>
+  );
+}
+
+export const dynamic = "force-dynamic";
+function LoginPage1() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -112,6 +121,7 @@ export default function LoginPage() {
 
   return (
       <>
+        <Suspense fallback={<p>Loading...</p>}>
         <SimplifiedNavbar />
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black to-gray-900 px-4">
           <motion.div
@@ -184,6 +194,7 @@ export default function LoginPage() {
             </p>
           </motion.div>
         </div>
+        </Suspense>
       </>
   );
 }

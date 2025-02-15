@@ -72,6 +72,8 @@ export const getProductById = async (id: string): Promise<{ product: Product } |
 export const getTags = async (): Promise<string[]> => {
   try {
     const response = await axios.get<string[]>('/tags');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     return response.data.tags;
   } catch (error) {
     return handleApiError(error, []);

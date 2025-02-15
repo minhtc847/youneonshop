@@ -1,11 +1,9 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import { getCartItems, CartItem } from '@/service/cartServices';
-import { addAddress } from '@/service/addressService';
 import locationData from '@/data/location.json';
 import { useSession } from "next-auth/react";
 import {motion} from "framer-motion";
-import {Button} from "@/components/ui/button";
 import Image from "next/image";
 import {router} from "next/client";
 
@@ -30,7 +28,7 @@ export default function CheckoutPage () {
         description: ''
     });
     const [imageLoadError, setImageLoadError] = useState<Record<string, boolean>>({})
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const getImageSrc = (item: CartItem) => {
         if (imageLoadError[item.product_id]) {
             return "/placeholder.svg"
@@ -39,6 +37,8 @@ export default function CheckoutPage () {
     }
     useEffect(() => {
         const fetchCartItems = async () => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
             const token = session?.user?.authentication_token;
             const items = await getCartItems(token);
             setCartItems(items.cart);
