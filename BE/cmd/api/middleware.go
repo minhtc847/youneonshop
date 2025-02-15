@@ -122,6 +122,7 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
 					w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS") // Allow methods
 					w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")     //Allow tags in header
+					w.Header().Set("Access-Control-Allow-Credentials", "true")
 					break
 				}
 			}
