@@ -101,8 +101,8 @@ export default function Navbar() {
                     <DropdownMenuContent className="w-56">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => router.push("/account")}>Profile</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push("/orders")}>Orders</DropdownMenuItem>
+                      {/*<DropdownMenuItem onClick={() => router.push("/account")}>Profile</DropdownMenuItem>*/}
+                      {/*<DropdownMenuItem onClick={() => router.push("/orders")}>Orders</DropdownMenuItem>*/}
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Log out</span>
