@@ -18,6 +18,7 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodPost, "/users/login", app.createAuthenticationJWTTokenHandler)
 	router.HandlerFunc(http.MethodGet, "/users/logout", app.requireAuthenticatedUser(app.logoutHandler))
+	router.HandlerFunc(http.MethodGet, "/user", app.requireAuthenticatedUser(app.getUserHandler))
 
 	router.HandlerFunc(http.MethodGet, "/products/:id", app.getProductHandler)
 	router.HandlerFunc(http.MethodGet, "/products", app.listProductHandler)
@@ -36,6 +37,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodDelete, "/addresses/:id", app.requireAuthenticatedUser(app.deleteAddressHandler))
 	router.HandlerFunc(http.MethodPut, "/addresses/:id", app.requireAuthenticatedUser(app.updateAddressHandler))
 
+	router.HandlerFunc(http.MethodPost, "/orders", app.requireAuthenticatedUser(app.createOrderHandler))
 	return app.enableCORS(app.authenticate(router))
 
 }

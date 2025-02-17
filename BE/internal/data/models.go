@@ -55,15 +55,28 @@ type Models struct {
 		Update(address *Address) error
 		Delete(id uuid.UUID) error
 	}
+	OrderDetail interface {
+		Insert(orderDetail *OrderDetail) (*uuid.UUID, error)
+		GetAllByUserID(id uuid.UUID) ([]*OrderDetail, error)
+		Update(orderDetail *OrderDetail) error
+		Delete(id uuid.UUID) error
+		GetById(id uuid.UUID) (*OrderDetail, error)
+	}
+	OrderItem interface {
+		Insert(orderItem *OrderItem) (*uuid.UUID, error)
+		GetAllByOrderID(id uuid.UUID) ([]*OrderItem, error)
+	}
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Users:      UserModel{DB: db},
-		Products:   ProductModel{DB: db},
-		Categories: CategoryModel{DB: db},
-		Tags:       TagModel{DB: db},
-		CartItems:  CartItemModel{DB: db},
-		Address:    AddressModel{DB: db},
+		Users:       UserModel{DB: db},
+		Products:    ProductModel{DB: db},
+		Categories:  CategoryModel{DB: db},
+		Tags:        TagModel{DB: db},
+		CartItems:   CartItemModel{DB: db},
+		Address:     AddressModel{DB: db},
+		OrderDetail: OrderDetailModel{DB: db},
+		OrderItem:   OrderItemModel{DB: db},
 	}
 }

@@ -12,6 +12,7 @@ type UserRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Password  string `json:"password"`
+	Telephone string `json:"telephone"`
 }
 
 // @Summary Register a user
@@ -33,6 +34,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		FirstName: input.FirstName,
 		LastName:  input.LastName,
 		Email:     input.Email,
+		Telephone: input.Telephone,
 	}
 	err = user.Password.Set(input.Password)
 	if err != nil {
@@ -62,6 +64,21 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"user": newUser}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+// @Summary Get the current user
+// @Description Get the current user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} data.User
+// @Router /user [get]
+func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	err := app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

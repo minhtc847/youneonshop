@@ -1,0 +1,98 @@
+package data
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"github.com/google/uuid"
+	"time"
+)
+
+type OrderDetail struct {
+	Id            uuid.UUID `json:"id"`
+	UserId        uuid.UUID `json:"user_id"`
+	Total         int       `json:"total"`
+	AddressDetail string    `json:"address_detail"`
+	Status        string    `json:"status"`
+}
+
+type OrderDetailModel struct {
+	DB *sql.DB
+}
+
+func (m OrderDetailModel) Insert(orderDetail *OrderDetail) (*uuid.UUID, error) {
+	query := `INSERT INTO order_details (user_id, total, address_detail, status) VALUES ($1, $2, $3, $4) RETURNING id`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var id uuid.UUID
+	err := m.DB.QueryRowContext(ctx, query, orderDetail.UserId, orderDetail.Total, orderDetail.AddressDetail, orderDetail.Status).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	return &id, nil
+}
+func (m OrderDetailModel) GetAllByUserID(id uuid.UUID) ([]*OrderDetail, error) {
+	query := `SELECT id, user_id, total, address_detail, status FROM order_details WHERE user_id = $1`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	rows, err := m.DB.QueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
+	var orderDetails []*OrderDetail
+	for rows.Next() {
+		var orderDetail OrderDetail
+		err := rows.Scan(&orderDetail.Id, &orderDetail.UserId, &orderDetail.Total, &orderDetail.AddressDetail, &orderDetail.Status)
+		if err != nil {
+			return nil, err
+		}
+		orderDetails = append(orderDetails, &orderDetail)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return orderDetails, nil
+}
+func (m OrderDetailModel) Update(orderDetail *OrderDetail) error {
+	query := `UPDATE order_details SET total = $1, address_detail = $2, status = $3 WHERE id = $4`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_, err := m.DB.ExecContext(ctx, query, orderDetail.Total, orderDetail.AddressDetail, orderDetail.Status, orderDetail.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (m OrderDetailModel) Delete(id uuid.UUID) error {
+	query := `DELETE FROM order_details WHERE id = $1`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (m OrderDetailModel) GetById(id uuid.UUID) (*OrderDetail, error) {
+	query := `SELECT id, user_id, total, address_detail, status FROM order_details WHERE id = $1`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var orderDetail OrderDetail
+	row := m.DB.QueryRowContext(ctx, query, id)
+	err := row.Scan(&orderDetail.Id, &orderDetail.UserId, &orderDetail.Total, &orderDetail.AddressDetail, &orderDetail.Status)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &orderDetail, nil
+}
