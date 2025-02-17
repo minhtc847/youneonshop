@@ -17,14 +17,12 @@ externalAxios.interceptors.response.use(
     function (error) {
         if (isAxiosError(error) && error.response && error.response.status === 401) {
             // User is not logged in
-            toast("Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
             redirectToLogin();
         } else if (error.response && error.response.data.message) {
             toast(error.response.data.message+""+error.response.status);
             console.log(error.response.data.message);
         } else {
             toast("Đã xảy ra lỗi. Vui lòng thử lại.");
-            console.log('An error occurred. Please try again.');
         }
         return Promise.reject(error);
     }

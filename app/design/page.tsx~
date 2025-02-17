@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const fonts = [
   { name: 'Neon', value: "'Brush Script MT', cursive" },
   { name: 'Retro', value: "'Courier New', monospace" },
-  { name: 'Modern', value: "'Open Sans', sans-serif" },
+  { name: 'Modern', value: "'Arial', sans-serif" },
 ]
 
 const colors = [

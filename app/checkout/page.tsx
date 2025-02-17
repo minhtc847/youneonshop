@@ -5,7 +5,7 @@ import locationData from '@/data/location.json';
 import { useSession } from "next-auth/react";
 import {motion} from "framer-motion";
 import Image from "next/image";
-import {router} from "next/client";
+import {useRouter} from "next/navigation";
 
 interface Address {
     city: string;
@@ -17,6 +17,7 @@ interface Address {
 }
 
 export default function CheckoutPage () {
+    const router = useRouter()
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const [address, setAddress] = useState<Address>({
@@ -28,26 +29,29 @@ export default function CheckoutPage () {
         description: ''
     });
     const [imageLoadError, setImageLoadError] = useState<Record<string, boolean>>({})
-    const { data: session } = useSession();
+    const { data: session,status } = useSession();
     const getImageSrc = (item: CartItem) => {
         if (imageLoadError[item.product_id]) {
             return "/placeholder.svg"
         }
         return item.image || "/placeholder.svg"
     }
-    useEffect(() => {
-        const fetchCartItems = async () => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    const fetchCartItems = async () => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-            const token = session?.user?.authentication_token;
-            const items = await getCartItems(token);
-            setCartItems(items.cart);
-            const total = items.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            setTotalPrice(total);
-        };
+        const token = session?.user?.authentication_token;
+        const items = await getCartItems(token);
+        return items.cart;
 
-        fetchCartItems();
-    }, [session]);
+    };
+    useEffect(() => {
+        fetchCartItems().then(r => {
+            setCartItems(r);
+            const total = r.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            setTotalPrice(total);
+        });
+
+    },[status, session, router]);
 
     const handleAddressChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -67,6 +71,7 @@ export default function CheckoutPage () {
                         <label className="block text-neon-pink mb-2">Thành Phố/Tỉnh</label>
                         <select name="city" value={address.city} onChange={handleAddressChange}
                                 className="w-full p-2 rounded">
+                            <option value="">Select City</option> {/* Add an empty option */}
                             {locationData.map((city) => (
                                 <option key={city.Code} value={city.Code}>{city.FullName}</option>
                             ))}
@@ -76,6 +81,7 @@ export default function CheckoutPage () {
                         <label className="block text-neon-pink mb-2">Quận/Huyện</label>
                         <select name="district" value={address.district} onChange={handleAddressChange}
                                 className="w-full p-2 rounded">
+                            <option value="">Select District</option> {/* Add an empty option */}
                             {locationData.find(city => city.Code === address.city)?.District.map((district) => (
                                 <option key={district.Code} value={district.Code}>{district.FullName}</option>
                             ))}
@@ -85,6 +91,7 @@ export default function CheckoutPage () {
                         <label className="block text-neon-pink mb-2">Phường/Xã</label>
                         <select name="ward" value={address.ward} onChange={handleAddressChange}
                                 className="w-full p-2 rounded">
+                            <option value="">Select Ward</option> {/* Add an empty option */}
                             {locationData.find(city => city.Code === address.city)?.District.find(district => district.Code === address.district)?.Ward.map((ward) => (
                                 <option key={ward.Code} value={ward.Code}>{ward.FullName}</option>
                             ))}
@@ -105,7 +112,7 @@ export default function CheckoutPage () {
                         <textarea name="description" value={address.description} onChange={handleAddressChange}
                                   className="w-full p-2 rounded"></textarea>
                     </div>
-                    <button onClick={()=> router.push("/payment")}
+                    <button onClick={()=> router.push("/payment?total="+totalPrice+"&address="+JSON.stringify(address))}
                             className="bg-neon-blue hover:bg-neon-blue/80 text-black font-semibold py-2 px-4 rounded-full transition-all duration-300 hover:shadow-neon-glow">Thanh toan
                     </button>
                 </div>

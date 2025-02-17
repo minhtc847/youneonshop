@@ -1,25 +1,21 @@
-import NextAuth from "next-auth";
+import NextAuth, {User} from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { Account, Profile as NextAuthProfile } from "next-auth";
-import { loginUser } from "@/service/userServices"; // Removed registerNewUserimport { Account, Profile as NextAuthProfile } from "next-auth";
+import {getLoggedUser, loginUser} from "@/service/userServices"; // Removed registerNewUserimport { Account, Profile as NextAuthProfile } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import { User as NextAuthUser } from "next-auth";
 import { Session as NextAuthSession } from "next-auth";
+import {toast} from "react-toastify";
+import {redirect} from "next/navigation";
 
-export interface Session extends NextAuthSession {
-  user: {
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-    authentication_token?: string;
-  };
-}
-interface User extends NextAuthUser {
-  authentication_token?: string;
-}
-interface Profile extends NextAuthProfile {
-  authentication_token?: string;
+interface CustomUser {
+  id: string;
+  email: string;
+  authentication_token: string;
+  first_name?: string;
+  last_name?: string;
+  telephone?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -43,15 +39,33 @@ const handler = NextAuth({
             email: credentials.email,
             password: credentials.password,
           });
-          console.log("Response from authorize function:", response);
-          return response;
+
+          const loggedUser = await getLoggedUser(response.authentication_token);
+
+          if (loggedUser.user) {
+            const user: CustomUser = {
+              id: loggedUser.user.id,
+              email: loggedUser.user.email,
+              authentication_token: response.authentication_token,
+              first_name: loggedUser.user["first-name"],
+              last_name: loggedUser.user["last_name"],
+              telephone: loggedUser.user.telephone,
+            };
+            return user;
+          }
+          return null;
         } catch (error) {
-          console.error("Error in authorize function:", error);
+          console.error("Error in credentials authorize function:", error);
+
           return null;
         }
       },
     }),
   ],
+  session: {
+    strategy: "jwt", // 🔥 Giữ session bằng JWT (không mất sau reload)
+    maxAge: 30 * 24 * 60 * 60, // Session tồn tại 30 ngày
+  },
   callbacks: {
     async signIn({ account, profile }: { account: Account | null; profile?: Profile }) {
       if (account?.provider === "google" && profile) {
@@ -74,29 +88,28 @@ const handler = NextAuth({
           return "/login?error=not signed in";
         }
       }
-
       return true;
     },
-    async jwt({ token, user, profile }: { token: JWT; user?: User; profile?: Profile }) {
-      if (user && 'authentication_token' in user) {
-        token.authentication_token = user.authentication_token;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.authentication_token = user?.authentication_token;
       }
-
-      if (profile && 'authentication_token' in profile) {
-        token.authentication_token = profile.authentication_token;
-      }
-
       return token;
+
     },
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-    async session({ session, token }: { session: Session; token: JWT }) {
-      session.user = session.user || {};
-      const expiresIn = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
-      session.expires = new Date(Date.now() + expiresIn).toISOString();
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      session.user.authentication_token = token.authentication_token() as string;
+    async session({ session, token }) {
+      session.user = {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+        name: token.id,
+        email: token.email,
+        authentication_token: token.authentication_token,
+      };
       return session;
     }
   },

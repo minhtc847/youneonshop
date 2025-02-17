@@ -9,8 +9,9 @@ import {useRouter, useSearchParams} from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
 import SimplifiedNavbar from "@/components/simplified-navbar";
 import { toast } from "react-toastify";
-import { signIn as nextAuthSignIn, useSession } from "next-auth/react"; // Import hooks từ NextAuth
+import {signIn, signIn as nextAuthSignIn, useSession} from "next-auth/react"; // Import hooks từ NextAuth
 import { motion } from "framer-motion";
+import {getLoggedUser, loginUser} from "@/service/userServices";
 
 interface SessionUser {
   name?: string | null;
@@ -18,7 +19,13 @@ interface SessionUser {
   image?: string | null;
   authentication_token?: string | null;
 }
-
+interface LoggedUser{
+    id?: string;
+  'first-name'?: string;
+    'last-name'?: string;
+    email?: string;
+    telephone?: string;
+}
 export default function LoginPage() {
   return (
       <Suspense fallback={<p>Loading...</p>}>
@@ -60,28 +67,18 @@ function LoginPage1() {
     e.preventDefault();
 
     try {
-      const result = await nextAuthSignIn("credentials", {
-        redirect: false, // Không redirect mặc định
+      const result = await signIn("credentials", {
+        redirect: false,
         email,
         password,
       });
-
       if (result?.error) {
         toast.error(result.error);
       } else {
-        // Lấy session để lưu token
-        const sessionResponse = await fetch("/api/auth/session"); // Gọi API để lấy session
-        const sessionData = await sessionResponse.json();
-
-        const user = sessionData?.user as SessionUser;
-        if (user?.authentication_token) {
-          localStorage.setItem("bearerToken", user.authentication_token);
-          toast.success("Login successful!");
-          router.push("/"); // Điều hướng về trang chính
-        } else {
-          toast.error("Failed to retrieve authentication token.");
+        toast.success("Login successful!");
+        router.push("/");
         }
-      }
+
     } catch (error) {
       console.error("Login failed:", error);
       toast.error("Login failed. Please check your credentials.");
@@ -167,25 +164,25 @@ function LoginPage1() {
                 Login
               </Button>
             </form>
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-600"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-800 text-gray-400">Or login with</span>
-                </div>
-              </div>
-              <div className="mt-6">
-                <Button
-                    variant="outline"
-                    className="w-full bg-transparent hover:bg-neon-blue/10 text-white border-neon-blue hover:border-neon-blue transition-all duration-300 transform hover:scale-105"
-                    onClick={handleGoogleSignIn}
-                >
-                  <FaGoogle className="mr-2" /> Google
-                </Button>
-              </div>
-            </div>
+            {/*<div className="mt-6">*/}
+            {/*  <div className="relative">*/}
+            {/*    <div className="absolute inset-0 flex items-center">*/}
+            {/*      <div className="w-full border-t border-gray-600"></div>*/}
+            {/*    </div>*/}
+            {/*    <div className="relative flex justify-center text-sm">*/}
+            {/*      <span className="px-2 bg-gray-800 text-gray-400">Or login with</span>*/}
+            {/*    </div>*/}
+            {/*  </div>*/}
+            {/*  <div className="mt-6">*/}
+            {/*    <Button*/}
+            {/*        variant="outline"*/}
+            {/*        className="w-full bg-transparent hover:bg-neon-blue/10 text-white border-neon-blue hover:border-neon-blue transition-all duration-300 transform hover:scale-105"*/}
+            {/*        onClick={handleGoogleSignIn}*/}
+            {/*    >*/}
+            {/*      <FaGoogle className="mr-2" /> Google*/}
+            {/*    </Button>*/}
+            {/*  </div>*/}
+            {/*</div>*/}
             <p className="mt-8 text-center text-gray-400">
               Don&apos;t have an account?{" "}
               <Link href="/register" className="text-neon-pink hover:underline transition-all duration-300">

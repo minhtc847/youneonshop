@@ -85,7 +85,7 @@ export const removeFromCart = async (token: string, itemId: string) => {
 export const createOrder = async (token: string, amount: number, address: string) => {
   try {
     const response = await axios.post("/orders", {
-      "total": amount,
+      "amount": amount,
       "address_detail": address
     }, {
       headers: {

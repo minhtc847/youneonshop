@@ -1,0 +1,261 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "react-toastify"
+import { motion } from "framer-motion"
+import Image from "next/image"
+import { Trash2, Minus, Plus } from "lucide-react"
+import {CartItem, getCartItems, removeFromCart, updateCartItem} from "@/service/cartServices"
+import { useSession } from "next-auth/react"
+import {CustomSession} from "@/app/api/auth/[...nextauth]/route";
+
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+export default function CartPage() {
+  const router = useRouter()
+  const { data: CustomSession, status } = useSession()
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null)
+  const [imageLoadError, setImageLoadError] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login")
+    } else if (status === "authenticated" && CustomSession?.user?.authentication_token) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+      fetchCartItems(session.user.authentication_token)
+    } else if (status === "loading") {
+      // Do nothing while loading
+    } else {
+      setError("Unable to authenticate. Please try logging in again.")
+    }
+  }, [status, session, router])
+
+  const fetchCartItems = async (token: string) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await getCartItems(token)
+      setCartItems(response.cart)
+    } catch (err) {
+      console.error("Error fetching cart items:", err)
+      setError("Failed to fetch cart items. Please try again.")
+      toast.error("Failed to fetch cart items. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+    if (!session?.user?.authentication_token || newQuantity < 1) return;
+
+    setUpdatingItemId(itemId);
+    try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+      await updateCartItem(session.user.authentication_token, itemId, newQuantity);
+      setCartItems((prev) => prev.map((item) => (item.product_id === itemId ? { ...item, quantity: newQuantity } : item)));
+    } catch (err) {
+      console.error("Error updating cart item:", err);
+      toast.error("Failed to update cart. Please try again.");
+    } finally {
+      setUpdatingItemId(null);
+    }
+  };
+
+  const handleRemoveItem = async (itemId: string) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+    if (!session?.user?.authentication_token) return
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+      await removeFromCart(session.user.authentication_token, itemId)
+      setCartItems((prev) => prev.filter((item) => item.product_id !== itemId))
+      toast.success("Item removed from cart")
+    } catch (err) {
+      console.error("Error removing item from cart:", err)
+      toast.error("Failed to remove item. Please try again.")
+    }
+  }
+
+  const handleImageError = (itemId: string) => {
+    setImageLoadError((prev) => ({ ...prev, [itemId]: true }))
+  }
+
+  const getImageSrc = (item: CartItem) => {
+    if (imageLoadError[item.product_id]) {
+      return "/placeholder.svg"
+    }
+    return item.image || "/placeholder.svg"
+  }
+
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  }
+
+  if (status === "loading" || isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold mb-8 text-neon-blue">Your Cart</h1>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, index) => (
+            <Skeleton key={`skeleton-${index}`} className="h-24 w-full" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold mb-8 text-neon-blue">Your Cart</h1>
+        <p className="text-white mb-4">Please log in to view your cart.</p>
+        <Button onClick={() => router.push("/login")} className="bg-neon-blue text-black">
+          Log In
+        </Button>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold mb-8 text-neon-blue">Your Cart</h1>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-16">
+      <motion.h1
+        className="text-4xl font-bold mb-8 text-neon-blue"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        Your Cart
+      </motion.h1>
+      {cartItems.length === 0 ? (
+        <motion.div
+          className="text-center space-y-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <p className="text-xl text-gray-400">Your cart is empty. Start shopping to add items to your cart!</p>
+          <Button
+            onClick={() => router.push("/products")}
+            className="bg-neon-blue hover:bg-neon-blue/80 text-black font-bold"
+          >
+            Browse Products
+          </Button>
+        </motion.div>
+      ) : (
+        <motion.div
+          className="space-y-6"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            visible: { transition: { staggerChildren: 0.1 } },
+          }}
+        >
+          {cartItems.map((item) => (
+            <motion.div
+              key={`cart-item-${item.product_id}`}
+              className="flex items-center justify-between bg-gray-800 p-4 rounded-lg"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+            >
+              <div className="flex items-center space-x-4">
+                <Image
+                  src={getImageSrc(item) || "/placeholder.svg"}
+                  alt={item.product_name}
+                  width={80}
+                  height={80}
+                  className="rounded-md"
+                  onError={() => handleImageError(item.product_id)}
+                />
+                <div>
+                  <h2 className="text-xl font-semibold text-neon-pink">{item.product_name}</h2>
+                  <p className="text-neon-green">{item.price.toLocaleString()}đ</p>
+                  <div className="flex items-center space-x-4 mt-2">
+                    <Button
+                      variant="default"
+                      size="icon"
+                      onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)}
+                      disabled={item.quantity <= 1 || updatingItemId === item.product_id}
+                      className="h-8 w-8"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="text-white">{item.quantity}</span>
+                    <Button
+                      variant="default"
+                      size="icon"
+                      onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)}
+                      disabled={updatingItemId === item.product_id}
+                      className="h-8 w-8"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-end space-y-2">
+                <p className="text-lg text-neon-yellow">{(item.price * item.quantity).toLocaleString()}đ</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveItem(item.product_id)}
+                  className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                >
+                  <Trash2 size={24} />
+                </Button>
+              </div>
+            </motion.div>
+          ))}
+          <motion.div
+            className="flex justify-between items-center mt-8 pt-4 border-t border-gray-700"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <h3 className="text-2xl font-bold text-neon-blue">Total:</h3>
+            <p className="text-2xl font-bold text-neon-green">{calculateTotal().toLocaleString()}đ</p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
+            <Button className="w-full bg-neon-blue hover:bg-neon-blue/80 text-black font-bold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-glow-blue"
+            onClick={()=> router.push("/checkout")}>
+              Proceed to Checkout
+            </Button>
+          </motion.div>
+        </motion.div>
+      )}
+    </div>
+  )
+}
+

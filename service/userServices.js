@@ -1,12 +1,13 @@
 import axios from "../setup/axios"
 import { signIn as nextAuthSignIn } from "next-auth/react"
 
-const registerNewUser = async ({ email, first_name, last_name, password }) => {
+const registerNewUser = async ({ email, first_name, last_name,telephone, password }) => {
     try {
         const response = await axios.post("/users", {
             email,
             first_name,
             last_name,
+            telephone,
             password,
         })
         console.log("Registration successful:", response.data)
@@ -17,12 +18,12 @@ const registerNewUser = async ({ email, first_name, last_name, password }) => {
     }
 }
 
-const loginUser = async ({ email, password }) => {
+const loginUser = async ({email, password} )=> {
     try {
         const response = await axios.post("/users/login", {
             email,
             password,
-        })
+        },)
         console.log("Login successful:", response.data)
         return response.data
     } catch (error) {
@@ -102,6 +103,19 @@ const registerGoogleUser = async (email, name) => {
         throw error;
     }
 };
+const getLoggedUser = async (token) => {
+    try {
+        const response = await axios.get("/user",
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }})
+        return response.data
+    } catch (error) {
+        console.log("User fetch failed:", error.response?.data || error.message)
+        throw error
+    }
+}
 
-export { registerNewUser, loginUser, logoutUser, createGoogleUser, signIn, registerGoogleUser }
+export { registerNewUser, loginUser, logoutUser, createGoogleUser, signIn, registerGoogleUser,getLoggedUser }
 
