@@ -1,13 +1,8 @@
-import NextAuth, {User} from "next-auth";
+import NextAuth, {Account} from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { Account, Profile as NextAuthProfile } from "next-auth";
 import {getLoggedUser, loginUser} from "@/service/userServices"; // Removed registerNewUserimport { Account, Profile as NextAuthProfile } from "next-auth";
-import { JWT } from "next-auth/jwt";
-import { User as NextAuthUser } from "next-auth";
-import { Session as NextAuthSession } from "next-auth";
-import {toast} from "react-toastify";
-import {redirect} from "next/navigation";
+
 
 interface CustomUser {
   id: string;
@@ -67,6 +62,8 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // Session tồn tại 30 ngày
   },
   callbacks: {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
     async signIn({ account, profile }: { account: Account | null; profile?: Profile }) {
       if (account?.provider === "google" && profile) {
         const defaultPassword = "986gjhsdgfbhjgsadjhf0273842098"; // Default password for Google users
@@ -94,6 +91,8 @@ const handler = NextAuth({
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
         token.authentication_token = user?.authentication_token;
       }
       return token;

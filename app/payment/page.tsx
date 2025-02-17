@@ -1,10 +1,18 @@
 'use client'
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import {Suspense, useEffect, useState} from "react";
 import { createOrder } from "@/service/cartServices";
 import { useSession } from "next-auth/react";
 
 export default function PaymentPage() {
+    return (
+        <Suspense fallback={<p>Loading...</p>}>
+            <PaymentPage1 />
+        </Suspense>
+    );
+}
+
+function PaymentPage1() {
     const searchParams = useSearchParams();
     const { data: session } = useSession();
     const [qrCodeSrc, setQrCodeSrc] = useState<string | null>(null);
@@ -25,7 +33,8 @@ export default function PaymentPage() {
 
     useEffect(() => {
         if (!session) return;
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
         const token = session.user?.authentication_token;
         if (!token || total === 0 || !address) return;
 
@@ -53,6 +62,7 @@ export default function PaymentPage() {
                 <>
                     <p className="text-lg mb-4">Scan the QR code to complete your payment.</p>
                     {qrCodeSrc && (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={qrCodeSrc} alt="QR Code for Payment" className="border border-gray-600 rounded-lg h-[400px]" />
                     )}
                     <p className="mt-4 text-lg">Total: {total.toLocaleString()}đ</p>

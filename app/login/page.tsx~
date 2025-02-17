@@ -164,25 +164,25 @@ function LoginPage1() {
                 Login
               </Button>
             </form>
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-600"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-800 text-gray-400">Or login with</span>
-                </div>
-              </div>
-              <div className="mt-6">
-                <Button
-                    variant="outline"
-                    className="w-full bg-transparent hover:bg-neon-blue/10 text-white border-neon-blue hover:border-neon-blue transition-all duration-300 transform hover:scale-105"
-                    onClick={handleGoogleSignIn}
-                >
-                  <FaGoogle className="mr-2" /> Google
-                </Button>
-              </div>
-            </div>
+            {/*<div className="mt-6">*/}
+            {/*  <div className="relative">*/}
+            {/*    <div className="absolute inset-0 flex items-center">*/}
+            {/*      <div className="w-full border-t border-gray-600"></div>*/}
+            {/*    </div>*/}
+            {/*    <div className="relative flex justify-center text-sm">*/}
+            {/*      <span className="px-2 bg-gray-800 text-gray-400">Or login with</span>*/}
+            {/*    </div>*/}
+            {/*  </div>*/}
+            {/*  <div className="mt-6">*/}
+            {/*    <Button*/}
+            {/*        variant="outline"*/}
+            {/*        className="w-full bg-transparent hover:bg-neon-blue/10 text-white border-neon-blue hover:border-neon-blue transition-all duration-300 transform hover:scale-105"*/}
+            {/*        onClick={handleGoogleSignIn}*/}
+            {/*    >*/}
+            {/*      <FaGoogle className="mr-2" /> Google*/}
+            {/*    </Button>*/}
+            {/*  </div>*/}
+            {/*</div>*/}
             <p className="mt-8 text-center text-gray-400">
               Don&apos;t have an account?{" "}
               <Link href="/register" className="text-neon-pink hover:underline transition-all duration-300">

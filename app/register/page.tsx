@@ -6,11 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FaGoogle } from 'react-icons/fa'
 import SimplifiedNavbar from '@/components/simplified-navbar'
 import { registerNewUser } from '@/service/userServices'
 import { toast } from 'react-toastify'
-import { signIn } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import axios from "axios";
 
@@ -48,9 +46,9 @@ export default function RegisterPage() {
     }
   }
 
-  const handleGoogleSignIn = () => {
-    signIn('google', { callbackUrl: '/account' })
-  }
+  // const handleGoogleSignIn = () => {
+  //   signIn('google', { callbackUrl: '/account' })
+  // }
 
   return (
     <>
