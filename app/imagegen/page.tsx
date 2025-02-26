@@ -91,6 +91,7 @@ export default function DesignPage() {
                     {/* Recent Generated Images */}
                     <div className="grid grid-cols-4 gap-4 mt-6">
                         {recentImages.map((img, index) => (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                                 key={index}
                                 src={img}

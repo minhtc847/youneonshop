@@ -1,5 +1,5 @@
 import './globals.css'
-import { Inter, Orbitron } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from '@/components/navbar'
 import { ToastContainer, Slide } from 'react-toastify'
@@ -8,7 +8,7 @@ import { NextAuthProvider } from '@/components/next-auth-provider'
 import RedirectListener from '@/components/RedirectListener'
 
 const inter = Inter({ subsets: ["latin"] });
-const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "700"] });
+// const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "700"] });
 export const metadata = {
   title: 'YOUNEON',
   description: 'Minimalist e-commerce website for selling neon lights',

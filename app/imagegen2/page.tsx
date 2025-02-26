@@ -90,6 +90,7 @@ export default function DesignPage() {
 
                     <div className="grid grid-cols-4 gap-4 mt-6">
                         {recentImages.map((img, index) => (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                                 key={index}
                                 src={img}
@@ -103,6 +104,7 @@ export default function DesignPage() {
 
                 <div className="bg-gray-900 p-8 rounded-xl shadow-xl border border-gray-700 flex items-center justify-center min-h-[400px]">
                     {imageSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={imageSrc} alt="Generated Neon Light" className="max-w-full max-h-full rounded-lg object-cover shadow-lg" />
                     ) : (
                         <p className="text-gray-500 text-lg">Your generated image will appear here.</p>
