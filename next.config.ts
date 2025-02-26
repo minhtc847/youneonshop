@@ -4,10 +4,14 @@ import { NextConfig } from "next";
 const nextConfig: NextConfig = {
     images: {
         remotePatterns: [
+            // {
+            //     protocol: "https",
+            //     hostname: "bizweb.dktcdn.net",
+            //     pathname: "/**",
+            // },
             {
                 protocol: "https",
-                hostname: "bizweb.dktcdn.net",
-                port: "",
+                hostname: "drive.google.com",
                 pathname: "/**",
             },
         ],

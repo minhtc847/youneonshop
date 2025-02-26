@@ -50,7 +50,7 @@ export default function DesignPage() {
 
     return (
         <div className="container mx-auto px-4 py-16">
-            <h1 className="text-4xl font-bold mb-8 text-center text-neon-blue">Design Your Custom Neon Light</h1>
+            <h1 className="text-4xl font-bold mb-8 text-center text-neon-blue">Sử dụng trí tuệ nhân tạo cho thiết kế của bạn</h1>
 
             <div className="grid md:grid-cols-2 gap-12 items-start">
                 <div className="space-y-6">
@@ -104,6 +104,7 @@ export default function DesignPage() {
 
                 <div className="bg-gray-900 p-8 rounded-lg shadow-lg flex items-center justify-center min-h-[400px] ">
                     {imageSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={imageSrc} alt="Generated Neon Light" className="max-w-full max-h-full rounded-lg object-cover" />
                     ) : (
                         <p className="text-gray-500">Your generated image will appear here.</p>

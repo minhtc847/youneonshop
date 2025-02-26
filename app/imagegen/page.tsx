@@ -50,7 +50,7 @@ export default function DesignPage() {
 
     return (
         <div className="container mx-auto px-4 py-16">
-            <h1 className="text-4xl font-bold mb-8 text-center text-neon-blue">Design Your Custom Neon Light</h1>
+            <h1 className="text-4xl font-bold mb-8 text-center text-neon-blue">Sử dụng Trí Tuệ Nhân Tạo cho thiết kế của bạn</h1>
 
             <div className="grid md:grid-cols-2 gap-12 items-start">
                 <div className="space-y-6">

@@ -67,26 +67,29 @@ export default function Navbar() {
             <Logo />
             <div className="hidden md:flex space-x-4 items-center">
               <NavLink href="/" className="px-2">
-                Home
+                Trang chủ
               </NavLink>
               <NavLink href="/products" className="px-2">
-                Products
+                Đèn Neon
               </NavLink>
-              <NavLink href="/imagegen" className="px-2 text-neon-pink">
+              <NavLink href="/products?category=Print UV" className="px-2">
+                Đèn In UV
+              </NavLink>
+              <NavLink href="/imagegen2" className="px-2 text-neon-pink">
                 Design With AI
               </NavLink>
               <NavLink href="/design" className="px-2">
                 Design Your Own
               </NavLink>
-              <NavLink href="/about" className="px-2">
-                About
-              </NavLink>
-              <NavLink href="/contact" className="px-2">
-                Contact
-              </NavLink>
-              <NavLink href="/faq" className="px-2">
-                FAQ
-              </NavLink>
+              {/*<NavLink href="/about" className="px-2">*/}
+              {/*  About*/}
+              {/*</NavLink>*/}
+              {/*<NavLink href="/contact" className="px-2">*/}
+              {/*  Contact*/}
+              {/*</NavLink>*/}
+              {/*<NavLink href="/faq" className="px-2">*/}
+              {/*  FAQ*/}
+              {/*</NavLink>*/}
               {status === "authenticated" ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -185,10 +188,13 @@ export default function Navbar() {
                 )}
                 <NavLink href="/">Home</NavLink>
                 <NavLink href="/products">Products</NavLink>
+                <NavLink href="/imagegen2" className="text-neon-pink">
+                  Design With AI
+                </NavLink>
                 <NavLink href="/design">Design Your Own</NavLink>
-                <NavLink href="/about">About</NavLink>
-                <NavLink href="/contact">Contact</NavLink>
-                <NavLink href="/faq">FAQ</NavLink>
+                {/*<NavLink href="/about">About</NavLink>*/}
+                {/*<NavLink href="/contact">Contact</NavLink>*/}
+                {/*<NavLink href="/faq">FAQ</NavLink>*/}
                 <Button
                     variant="ghost"
                     size="sm"

@@ -1,3 +1,5 @@
+import {list} from "postcss";
+
 export const products = [
   {
     id: 1,
@@ -89,3 +91,21 @@ export const products = [
   },
 ]
 
+export const listCategories = new Map<string, string> ()
+
+listCategories.set('Neon Sign', 'Neon')
+listCategories.set('Print UV', 'In UV')
+listCategories.set('Engraving', 'Đèn Khắc')
+
+export const listTags = new Map<string, string> ()
+
+listTags.set("Birthday", "Sinh Nhat")
+listTags.set("Wedding", "Hoi Nghi")
+listTags.set("Business", "Doanh Nghiep")
+listTags.set("Personalized", "Personalized")
+listTags.set("Holiday", "Le Hoi")
+listTags.set("For Home", "For Home")
+listTags.set("Outdoor", "Outdoor")
+listTags.set("Bar", "Bar")
+listTags.set("Animal", "Animal")
+listTags.set("Art", "Art")

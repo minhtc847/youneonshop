@@ -11,6 +11,34 @@ const fonts = [
   { name: 'Neon', value: "'Brush Script MT', cursive" },
   { name: 'Retro', value: "'Courier New', monospace" },
   { name: 'Modern', value: "'Open Sans', sans-serif" },
+  { name: 'Nickainley', value: "'Nickainley', cursive" },
+  { name: 'Antonio', value: "'Antonio', sans-serif" },
+  { name: 'LoveNote', value: "'LoveNote', cursive" },
+  { name: 'Northshore', value: "'Northshore', cursive" },
+  { name: 'Nevada', value: "'Nevada', sans-serif" },
+  { name: 'Neontrace', value: "'Neontrace', cursive" },
+  { name: 'NeonLite', value: "'NeonLite', cursive" },
+  { name: 'Marquee', value: "'Marquee', serif" },
+  { name: 'LoveNeon', value: "'LoveNeon', cursive" },
+  { name: 'Buttercup', value: "'Buttercup', cursive" },
+  { name: 'Typewriter', value: "'Typewriter', monospace" },
+  { name: 'Monaco', value: "'Monaco', monospace" },
+  { name: 'Rocket', value: "'Rocket', sans-serif" },
+  { name: 'Royalty', value: "'Royalty', serif" },
+  { name: 'Beachfront', value: "'Beachfront', cursive" },
+  { name: 'Freehand', value: "'Freehand', cursive" },
+  { name: 'Austin', value: "'Austin', serif" },
+  { name: 'Signature', value: "'Signature', cursive" },
+  { name: 'Chelsea', value: "'Chelsea', serif" },
+  { name: 'Amanda', value: "'Amanda', cursive" },
+  { name: 'Barcelona', value: "'Barcelona', cursive" },
+  { name: 'NewCursive', value: "'NewCursive', cursive" },
+  { name: 'Amsterdam', value: "'Amsterdam', cursive" },
+  { name: 'Bayview', value: "'Bayview', cursive" },
+  { name: 'Alexa', value: "'Alexa', cursive" },
+  { name: 'FREESCPT', value: "'FREESCPT', cursive" },
+  { name: 'Barcelony', value: "'Barcelony', cursive" },
+  { name: 'Kiona', value: "'Kiona', sans-serif" },
 ]
 
 const colors = [
@@ -90,7 +118,7 @@ export default function DesignPage() {
               onValueChange={(value) => setSize(value[0])}
               className="my-4"
             />
-            <div className="text-white text-center">{size}px</div>
+            <div className="text-white text-center">{size}</div>
           </div>
 
           <Button className="w-full bg-neon-pink hover:bg-neon-pink/80 text-black font-bold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-glow-pink text-lg">

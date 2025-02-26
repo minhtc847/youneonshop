@@ -261,3 +261,147 @@
   scrollbar-width: thin;
   scrollbar-color: #00ffff #1a1a1a;
 }
+@font-face {
+  font-family: 'Nickainley';
+  src: url('/fonts/Nickainley.ttf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Antonio';
+  src: url('/fonts/Antonio-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'LoveNote';
+  src: url('/fonts/LoveNote.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Northshore';
+  src: url('/fonts/Northshore.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Nevada';
+  src: url('/fonts/Nevada.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Neontrace';
+  src: url('/fonts/Neontrace.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'NeonLite';
+  src: url('/fonts/NeonLite.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Marquee';
+  src: url('/fonts/Marquee.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'LoveNeon';
+  src: url('/fonts/LoveNeon.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Buttercup';
+  src: url('/fonts/Buttercup.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Typewriter';
+  src: url('/fonts/Typewriter.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Monaco';
+  src: url('/fonts/Monaco.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Rocket';
+  src: url('/fonts/Rocket.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Royalty';
+  src: url('/fonts/Royalty.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Beachfront';
+  src: url('/fonts/Beachfront.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Freehand';
+  src: url('/fonts/Freehand.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Austin';
+  src: url('/fonts/Austin.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Signature';
+  src: url('/fonts/Signature.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Chelsea';
+  src: url('/fonts/Chelsea.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Amanda';
+  src: url('/fonts/Amanda.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Barcelona';
+  src: url('/fonts/Barcelona.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'NewCursive';
+  src: url('/fonts/NewCursive.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Amsterdam';
+  src: url('/fonts/Amsterdam.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Bayview';
+  src: url('/fonts/Bayview.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Alexa';
+  src: url('/fonts/Alexa.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'FREESCPT';
+  src: url('/fonts/FREESCPT.TTF') format('truetype');
+}
+
+@font-face {
+  font-family: 'Barcelony';
+  src: url('/fonts/Barcelony.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Kiona';
+  src: url('/fonts/Kiona-Regular.ttf') format('truetype');
+}
+
+/* Example Usage */
+body {
+  font-family: 'Nickainley', sans-serif;
+}

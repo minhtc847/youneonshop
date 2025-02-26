@@ -1,5 +1,5 @@
 import './globals.css'
-import { Inter } from 'next/font/google'
+import { Inter, Orbitron } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from '@/components/navbar'
 import { ToastContainer, Slide } from 'react-toastify'
@@ -7,8 +7,8 @@ import 'react-toastify/dist/ReactToastify.css'
 import { NextAuthProvider } from '@/components/next-auth-provider'
 import RedirectListener from '@/components/RedirectListener'
 
-const inter = Inter({ subsets: ['latin'] })
-
+const inter = Inter({ subsets: ["latin"] });
+const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "700"] });
 export const metadata = {
   title: 'YOUNEON',
   description: 'Minimalist e-commerce website for selling neon lights',
@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-black text-white min-h-screen`}>
+      <body className={`${inter.className}  bg-black text-white min-h-screen`}>
         <NextAuthProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <Navbar />

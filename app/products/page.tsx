@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from 'react-toastify'
 import ModernProductCard from '@/components/modern-product-card'
 import { useDebounce } from 'use-debounce'
+import {listCategories} from "@/data/products";
 
 const themes = {
   blue: { primary: '#00ffff', secondary: '#0080ff' },
@@ -291,7 +292,7 @@ function ProductssPage() {
             transition={{ duration: 0.5 }}
             style={{ color: themes[theme].primary }}
           >
-            Illuminate Your Space
+            Chiếu sáng không gian của bạn
           </motion.h1>
           <motion.p
             className="text-xl text-center text-gray-300 mb-8"
@@ -299,7 +300,8 @@ function ProductssPage() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Discover our collection of stunning neon lights to transform your environment
+            {/*Discover our collection of stunning neon lights to transform your environment*/}
+            Sản phẩm độc đáo sáng tạo chất lượng luôn được đặt lên hàng đầu
           </motion.p>
         </div>
         <div className="absolute inset-0 opacity-50">
@@ -315,13 +317,13 @@ function ProductssPage() {
             transition={{ duration: 0.5 }}
           >
             <div>
-              <Label htmlFor="search" className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Search</Label>
+              <Label htmlFor="search" className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Tìm kiếm</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <Input
                   id="search"
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="Tìm theo tên..."
                   value={currentFilters.searchTerm}
                   onChange={(e) => setCurrentFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
                   className="pl-10 bg-gray-700 text-white border-gray-600 focus:border-current"
@@ -330,7 +332,7 @@ function ProductssPage() {
               </div>
             </div>
             <div>
-              <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Categories</Label>
+              <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Loại đèn</Label>
               {categories.map(category => (
                 <div key={category} className="flex items-center space-x-2 mb-2">
                   <Checkbox
@@ -338,13 +340,13 @@ function ProductssPage() {
                     checked={currentFilters.category === category}
                     onCheckedChange={() => handleCategoryChange(category)}
                   />
-                  <Label htmlFor={category} className="text-white">{category}</Label>
+                  <Label htmlFor={category} className="text-white">{listCategories.get(category)}</Label>
                 </div>
               ))}
             </div>
             <div>
               <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Tags</Label>
-              <div className="max-h-40 overflow-y-auto pr-2">
+              <div className="max-h-90 overflow-y-auto pr-2">
                 {tags.map(tag => (
                   <div key={tag} className="flex items-center space-x-2 mb-2">
                     <Checkbox
@@ -358,7 +360,7 @@ function ProductssPage() {
               </div>
             </div>
             <div>
-              <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Price Range</Label>
+              <Label className="text-lg mb-2 block" style={{ color: themes[theme].primary }}>Giá</Label>
               <div className="flex items-center space-x-4 mb-4">
                 <div className="relative flex-1">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -399,13 +401,13 @@ function ProductssPage() {
                 onClick={applyFilters}
                 className="flex-1 bg-neon-blue hover:bg-neon-blue/80 text-black font-bold"
               >
-                Apply Filters
+                Áp dụng
               </Button>
               <Button
                 onClick={clearFilters}
                 className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold"
               >
-                Clear Filters
+                Xoá
               </Button>
             </div>
           </motion.div>
@@ -426,8 +428,8 @@ function ProductssPage() {
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="asc">Price: Low to High</SelectItem>
-                  <SelectItem value="desc">Price: High to Low</SelectItem>
+                  <SelectItem value="asc">Giá: Thấp đến Cao</SelectItem>
+                  <SelectItem value="desc">Giá: Cao đến Thấp</SelectItem>
                 </SelectContent>
               </Select>
             </div>
