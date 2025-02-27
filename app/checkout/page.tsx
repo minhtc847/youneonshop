@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import {motion} from "framer-motion";
 import Image from "next/image";
 import {useRouter} from "next/navigation";
+import {toast} from "react-toastify";
+
 
 interface Address {
     city: string;
@@ -62,6 +64,45 @@ export default function CheckoutPage () {
     const handleImageError = (itemId: string) => {
         setImageLoadError((prev) => ({ ...prev, [itemId]: true }))
     }
+    const validateAddress = () => {
+        // Kiểm tra tất cả các trường có bị trống không
+        if (!address.city.trim()) {
+            toast.info("Vui lòng chọn Tinh/Thành Phố.");
+            return false;
+        }
+        if (!address.district.trim()) {
+            toast.info("Vui lòng chọn Quận/Huyện.");
+            return false;
+        }
+        if (!address.ward.trim()) {
+            toast.info("Vui lòng chọn Phường/Xã.");
+            return false;
+        }
+        if (!address.detail.trim()) {
+            toast.info("Vui lòng nhập Số Nhà.");
+            return false;
+        }
+        if (!address.telephone.trim()) {
+            toast.info("Vui lòng nhập Số Điện Thoại.");
+            return false;
+        }
+
+        // Kiểm tra số điện thoại có đúng định dạng không (chỉ chứa số và có 10-11 chữ số)
+        const phoneRegex = /^[0-9]{10,11}$/;
+        if (!phoneRegex.test(address.telephone)) {
+            toast.info("Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.");
+            return false;
+        }
+
+        return true;
+    };
+
+
+    const handleCheckout = () => {
+        if (!validateAddress()) return;
+
+        router.push("/payment?total=" + totalPrice + "&address=" + JSON.stringify(address));
+    };
 
     return (
         <main className="container mx-auto px-4 py-16">
@@ -113,7 +154,7 @@ export default function CheckoutPage () {
                         <textarea name="description" value={address.description} onChange={handleAddressChange}
                                   className="w-full p-2 rounded"></textarea>
                     </div>
-                    <button onClick={()=> router.push("/payment?total="+totalPrice+"&address="+JSON.stringify(address))}
+                    <button onClick={handleCheckout}
                             className="bg-neon-blue hover:bg-neon-blue/80 text-black font-semibold py-2 px-4 rounded-full transition-all duration-300 hover:shadow-neon-glow">Thanh toan
                     </button>
                 </div>
