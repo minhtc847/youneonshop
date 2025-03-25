@@ -2,20 +2,20 @@ import { NextConfig } from "next";
 
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
-    images: {
-        remotePatterns: [
-            // {
-            //     protocol: "https",
-            //     hostname: "bizweb.dktcdn.net",
-            //     pathname: "/**",
-            // },
-            {
-                protocol: "https",
-                hostname: "drive.google.com",
-                pathname: "/**",
-            },
-        ],
-    },
+    // images: {
+    //     remotePatterns: [
+    //         // {
+    //         //     protocol: "https",
+    //         //     hostname: "bizweb.dktcdn.net",
+    //         //     pathname: "/**",
+    //         // },
+    //         {
+    //             protocol: "https",
+    //             hostname: "drive.google.com",
+    //             pathname: "/**",
+    //         },
+    //     ],
+    // },
     eslint: {
         ignoreDuringBuilds: true, // Ignore ESLint errors
     },

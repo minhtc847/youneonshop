@@ -1,5 +1,5 @@
 import './globals.css'
-import { Inter, Orbitron } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from '@/components/navbar'
 import { ToastContainer, Slide } from 'react-toastify'

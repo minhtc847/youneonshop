@@ -26,7 +26,7 @@ export default function DesignPage() {
 
         setLoading(true)
         try {
-            const response = await axios.post("https://youneonshop-2.onrender.com/generate-image",
+            const response = await axios.post("https://youneonshop-2-vzno.onrender.com/generate-image",
                 { prompt: "Hãy tạo cho tôi 1 chiếc đèn neon đẹp: " + text },
                 { responseType: "blob" }
             )
