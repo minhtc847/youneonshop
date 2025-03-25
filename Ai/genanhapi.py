@@ -6,7 +6,7 @@ import io
 from googletrans import Translator
 from flask_cors import CORS  # Import CORS
 
-API_KEY = "eff81f4c9bb20f8fcaa69208059f45c57b4f31305200da76f2a3b42ae8a6a576f896aac1bea5b2e6b806d6e2b826f774"
+API_KEY = "74d9d9475e8bf08cb2c68794cec9b7d28617d999ed370df76d96040ded1954ddf0e0d2f9f0a16c221dbdc699d7ac3ebf"
 API_URL = "https://clipdrop-api.co/text-to-image/v1"
 
 app = Flask(__name__)

@@ -38,6 +38,9 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPut, "/addresses/:id", app.requireAuthenticatedUser(app.updateAddressHandler))
 
 	router.HandlerFunc(http.MethodPost, "/orders", app.requireAuthenticatedUser(app.createOrderHandler))
+	//
+	//router.HandlerFunc(http.MethodPost, "/shorten", app.createShortenHandler)
+	//router.HandlerFunc(http.MethodGet, "/:shortID", app.redirectHandler)
 	return app.enableCORS(app.authenticate(router))
 
 }

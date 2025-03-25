@@ -66,6 +66,11 @@ type Models struct {
 		Insert(orderItem *OrderItem) (*uuid.UUID, error)
 		GetAllByOrderID(id uuid.UUID) ([]*OrderItem, error)
 	}
+	Shortener interface {
+		CreateShortener(longURL string, shortURL string) (Shortener, error)
+		GetShortener(shortURL string) (*Shortener, error)
+		IsLongURLExists(longURL string) (bool, error)
+	}
 }
 
 func NewModels(db *sql.DB) Models {
@@ -78,5 +83,6 @@ func NewModels(db *sql.DB) Models {
 		Address:     AddressModel{DB: db},
 		OrderDetail: OrderDetailModel{DB: db},
 		OrderItem:   OrderItemModel{DB: db},
+		Shortener:   ShortenerModel{db: db},
 	}
 }
